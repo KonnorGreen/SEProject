@@ -1,0 +1,26 @@
+p {
+	color: green;
+}
+
+iframe {
+	width: 100%;
+	height: 50%;
+}
+
+#shoppingCartIFrame {
+	visibility: hidden;
+}
+
+.collapsableForm {
+	margin-top: 10px;
+	padding: 10px;
+	border: 1px solid black;
+}
+
+td {
+	text-align: center;
+}
+
+div {
+	
+}

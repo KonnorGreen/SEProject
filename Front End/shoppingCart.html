@@ -1,0 +1,127 @@
+<HTML>
+	<link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen"/>
+	<head>
+	
+	</head>
+	<body>
+		<p>Hello, shopping cart!</p>
+		 <table style="width:50%">
+			<tr>
+				<th>Product Name</th>
+				<th>Product Quantity</th>
+				<th>Price</th>
+			</tr>
+			<tr>
+				<td>El Grande Chap Ay ay ay - burrito</td>
+				<td>2</td>
+				<td>4.99</td>
+			</tr>
+			<tr>
+				<th></th>
+				<th></th>
+				<th>Subtotal</th>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td>9.98</td>
+			</tr>
+		</table>
+		<button id="payByCardButton">Credit/Debit</button>
+		<button id="payByCashButton">Cash</button>
+		<button>Void</button>
+		<button id="customerLogInButton">Log In Customer Account</button>
+		
+		</br>
+		
+		<div id="customerVerificationForm" class="collapsableForm">
+			<form>
+				<input type="tel" id="customerPhoneNumber">
+				<input type="submit" value="Send SMS">
+			</form>
+		</div>
+		
+		<div id="cashSubmissionForm" class="collapsableForm">
+			<form>
+				<label for="cashGiven">The amount of cash given by the customer</label>
+				<br>
+				<input type="number" id="cashGiven" min="0.00" step="0.01">
+				<br>
+				<p id="changeDue"></p>
+				<input type="submit" value="Confirm Transaction">
+			</form>
+		</div>
+		
+		<div id="cardSubmissionForm" class="collapsableForm">
+			<form>
+				<input type="submit" value="Confirm Transaction">
+			</form>
+		</div>
+		
+		<script>
+			var totalDue = 9.98;
+			var customerToken = null;
+			var wasMerchantNotifiedToLogInCustomer = false;
+		
+			function hideAllForms() {
+				document.getElementById("customerVerificationForm").style.display = "none";
+				document.getElementById("cashSubmissionForm").style.display = "none";
+				document.getElementById("cardSubmissionForm").style.display = "none";
+			}
+			
+			hideAllForms();
+		
+			// Returns the new state of visiblity, true for visible, false for invisible
+			function toggleElementVisibility(elementID) {
+				var panel = document.getElementById(elementID)
+				if (panel.style.display == "none") {
+					panel.style.display = ""
+					return true;
+				} else {
+					panel.style.display = "none"
+					return false;
+				}
+			}
+		
+			function checkIfCustomerLoggedIn() {
+				if(!wasMerchantNotifiedToLogInCustomer) {
+					alert("The customer isn't logged into their rewards account, be sure to ask if they have one!");
+					wasMerchantNotifiedToLogInCustomer = true;
+				}
+			}
+		
+			document.getElementById("customerLogInButton").onclick = function() {
+				hideAllForms()
+				toggleElementVisibility("customerVerificationForm")
+			}
+			
+			document.getElementById("payByCashButton").onclick = function() {
+				checkIfCustomerLoggedIn();
+				hideAllForms()
+				toggleElementVisibility("cashSubmissionForm")
+			}
+			
+			document.getElementById("payByCardButton").onclick = function() {
+				checkIfCustomerLoggedIn();
+				hideAllForms()
+				toggleElementVisibility("cardSubmissionForm")
+			}
+			
+			document.getElementById("cashGiven").onchange = function() {
+				var dollars = document.getElementById("cashGiven").value - totalDue;
+				var cents = dollars * 100;
+				var difference = Math.round(cents)/100;
+				
+				if (difference < 0 ) {
+					document.getElementById("changeDue").innerHTML = "Not enough cash to cover total, $" + Math.abs(difference) + " short!";
+				} else if (difference == 0) {
+					document.getElementById("changeDue").innerHTML = "No change due!";
+				} else {
+					document.getElementById("changeDue").innerHTML = "Change due: $" + difference;
+				}
+				
+				
+			}
+		</script>
+	</body>
+</HTML>
