@@ -1,0 +1,33 @@
+<HTML>
+	<link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen"/>
+	<head>
+	
+	</head>
+	<body>
+		<p>Hello, admin!</p>
+		<input type="text" placeholder="Search..">
+		</br>
+		<button>Reports</button>
+		<button id="pingButton">Click me to ping!</button>
+		</br>
+		<button>Sticky Item</button>
+		<button>Sticky Item</button>
+		
+		<script>
+			document.getElementById("pingButton").onclick = function() {
+				const http = new XMLHttpRequest();
+				const url = "http://127.0.0.1:8000";
+				http.open("GET",url);
+				http.send("ping");
+				
+				console.log("Ping has been sent to " + url + " !");
+				
+				http.onreadystatechange = function() {
+					if(this.readyState == 4 && this.status == 200) {
+						console.log(http.responseText);
+					}
+				}
+			}
+		</script>
+	</body>
+</HTML>

@@ -5,16 +5,11 @@
 	</head>
 	<body>
 		<p>Hello, shopping cart!</p>
-		 <table style="width:50%">
+		 <table id="shoppingCartTable" style="width:50%">
 			<tr>
 				<th>Product Name</th>
 				<th>Product Quantity</th>
 				<th>Price</th>
-			</tr>
-			<tr>
-				<td>El Grande Chap Ay ay ay - burrito</td>
-				<td>2</td>
-				<td>4.99</td>
 			</tr>
 			<tr>
 				<th></th>
@@ -24,7 +19,7 @@
 			<tr>
 				<td></td>
 				<td></td>
-				<td>9.98</td>
+				<td></td>
 			</tr>
 		</table>
 		<button id="payByCardButton">Credit/Debit</button>
@@ -62,6 +57,33 @@
 			var totalDue = 9.98;
 			var customerToken = null;
 			var wasMerchantNotifiedToLogInCustomer = false;
+		
+			function resetShoppingCartDisplay() {
+				var table = document.getElementById("shoppingCartTable");
+				while(table.rows.length > 3) {
+					table.deleteRow(1);
+				}
+			}
+		
+			function insertShoppingCartItem(itemData) {
+				var table = document.getElementById("shoppingCartTable");
+				var row = table.insertRow(1);
+				var productName = row.insertCell(0);
+				var productQuantity = row.insertCell(1);
+				var productPrice = row.insertCell(2);
+				
+				productName.innerHTML = itemData.displayName;
+				productQuantity.innerHTML = itemData.amount;
+				productPrice.innerHTML = itemData.price;
+			}
+		
+			window.addEventListener("message",function(e) {
+				resetShoppingCartDisplay();
+				for( [k, v] of Object.entries(e.data.data) ) {
+					console.log(k, v);
+					insertShoppingCartItem(v);
+				}
+			}, false);
 		
 			function hideAllForms() {
 				document.getElementById("customerVerificationForm").style.display = "none";
