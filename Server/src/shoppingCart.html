@@ -14,7 +14,7 @@
 			<tr>
 				<th></th>
 				<th></th>
-				<th>Subtotal</th>
+				<th id="subTotal">Subtotal</th>
 			</tr>
 			<tr>
 				<td></td>
@@ -58,6 +58,10 @@
 			var customerToken = null;
 			var wasMerchantNotifiedToLogInCustomer = false;
 		
+			function sendDataToParent(sentDataType,sentData) {
+				window.parent.postMessage({ dataType: sentDataType, data: sentData },"*");
+			}
+		
 			function resetShoppingCartDisplay() {
 				var table = document.getElementById("shoppingCartTable");
 				while(table.rows.length > 3) {
@@ -73,15 +77,48 @@
 				var productPrice = row.insertCell(2);
 				
 				productName.innerHTML = itemData.displayName;
-				productQuantity.innerHTML = itemData.amount;
+				
+				// Insert the input field for the amount spinner and hook up the onchange function
+				productQuantity.innerHTML = '<input id="spinner" type="number" value="'+itemData.amount+'" min="0" step="1">'
+				productQuantity.onchange = function() { 
+					var amount = productQuantity.childNodes.item("spinner").value
+					if (amount <= 0) {
+						var result = window.confirm("Are you sure you want to remove "+itemData.displayName+" from the shopping cart?");
+						if (result) {
+							sendDataToParent("productSpinnerUpdate",{"UID": itemData.UID, "amount": amount})
+						} else {
+							productQuantity.childNodes.item("spinner").value = 1;
+						}
+					} else {
+						sendDataToParent("productSpinnerUpdate",{"UID": itemData.UID, "amount": amount})
+					}
+				}
+				
 				productPrice.innerHTML = itemData.price;
 			}
 		
 			window.addEventListener("message",function(e) {
-				resetShoppingCartDisplay();
-				for( [k, v] of Object.entries(e.data.data) ) {
-					console.log(k, v);
-					insertShoppingCartItem(v);
+				if (e.data.dataType == "shoppingCartUpdate") {
+					totalDue = 0;
+					resetShoppingCartDisplay();
+					
+					for( [k, v] of Object.entries(e.data.data) ) {
+						console.log(k, v);
+						
+						// Insert the shopping cart item into the table
+						insertShoppingCartItem(v);
+						
+						// Update the subtotal
+						totalDue = totalDue + (v.price * v.amount);
+					}
+					
+					// Update the subtotal label
+					var dollars = totalDue;
+					var cents = dollars * 100;
+					var formattedDue = Math.round(cents)/100;
+					
+					subTotalLabel = document.getElementById("subTotal")
+					subTotalLabel.innerHTML = formattedDue;
 				}
 			}, false);
 		

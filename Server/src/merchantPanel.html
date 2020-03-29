@@ -30,17 +30,68 @@
 			var shoppingCart = [];
 			
 			// https://stackoverflow.com/questions/9153445/how-to-communicate-between-iframe-and-the-parent-site
-			function sendDataToIFrame(frameID,sentData) {
+			function sendDataToIFrame(frameID,sentDataType,sentData) {
 				/*var event = new CustomEvent("welborn_pushDataToFrame",{ data: sentData });
 				var iframe = document.getElementById(frameID);
 				iframe.contentWindow.dispatchEvent(event);*/
 				var iframe = document.getElementById(frameID);
-				iframe.contentWindow.postMessage({ data: sentData },"*");
+				iframe.contentWindow.postMessage({ dataType: sentDataType, data: sentData },"*");
 			}
 		
 			function pushShoppingCartData() {
-				sendDataToIFrame("shoppingCartIFrame",shoppingCart);
+				sendDataToIFrame("shoppingCartIFrame","shoppingCartUpdate",shoppingCart);
 			}
+			
+			function addToShoppingCart(item) {
+				// If we can find the same item in the shopping cart, then just increment the amount
+				for( [k, v] of Object.entries(shoppingCart) ) {
+					if (v.UID == item.UID) {
+						console.log(item.amount);
+						v.amount = v.amount + item.amount;
+						pushShoppingCartData();
+						return;
+					}
+				}
+				
+				// If we didn't find an item of the same UID in the shopping cart, then go ahead and add it
+				clonedItem = {
+					"UID": item.UID,
+					"displayName": item.displayName,
+					"price": item.price,
+					"amount": item.amount,
+				}
+				shoppingCart.push(clonedItem);
+				pushShoppingCartData();
+			}
+			
+			function removeFromShoppingCart(itemUID) {
+				for( [k, v] of Object.entries(shoppingCart) ) {
+					if (v.UID == itemUID) {
+						shoppingCart.splice(k,1);
+					}
+				}
+			}
+			
+			window.addEventListener("message",function(e) {
+				if (e.data.dataType == "productSpinnerUpdate") {
+					console.log("fantasy");
+					var item = e.data.data;
+					for( [k, v] of Object.entries(shoppingCart) ) {
+						if (v.UID == item.UID) {
+							v.amount = item.amount;
+							console.log("Item UID "+v.UID+", "+v.displayName+" has updated its amount to "+v.amount+"!");
+							
+							if (v.amount <= 0) {
+								console.log("Removing "+v.displayName+"!");
+								removeFromShoppingCart(v.UID);
+							}
+							
+							pushShoppingCartData();
+							return;
+						}
+					}
+				}
+			})
 			
 			document.getElementById("shoppingCartIFrame").onload = function() {
 				pushShoppingCartData();
@@ -53,11 +104,8 @@
 				"amount": 1,
 			};
 			
-			shoppingCart.push(burrito);
-			
 			document.getElementById("sticky1").onclick = function() {
-				shoppingCart.push(burrito);
-				pushShoppingCartData();
+				addToShoppingCart(burrito)
 			}
 		
 			document.getElementById("shoppingCartButton").onclick = function() {
