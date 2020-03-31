@@ -1,5 +1,7 @@
 package softwareengineering;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -14,12 +16,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class serv {
+public class SoftwareEngineering {
     private static String indexHTML;
     private static String adminPanelHTML;
     private static String merchantPanelHTML;
     private static String shoppingCartHTML;
     private static String stylesheetCSS;
+    private static Gson gson;
+    private static ProjectDB database;
     
     // https://stackoverflow.com/questions/11640025/how-to-obtain-the-query-string-in-a-get-with-java-httpserver-httpexchange
     public static Map<String, String> queryToMap(String query) {
@@ -53,9 +57,13 @@ public class serv {
         
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         
+        // API calls
         server.createContext("/ping", new pingHandler());
         server.createContext("/sendsms", new SMSHandler());
+        server.createContext("/finalizetransaction", new finalizeTransactionHandler());
+        server.createContext("/getrewardpoints", new getRewardPointsHandler());
         
+        // Webpage requests
         server.createContext("/index.html", new indexHandler());
         server.createContext("/adminPanel.html", new adminHandler());
         server.createContext("/merchantPanel.html", new merchantHandler());
@@ -162,6 +170,57 @@ public class serv {
                 System.out.println("Malformed SMS request!");
                 response = "Malformed request!".getBytes();
             }
+            
+            t.sendResponseHeaders(200, response.length);
+            OutputStream os = t.getResponseBody();
+            
+            os.write(response);
+            os.close();
+        }
+    }
+    
+    // Must be POST
+    static class finalizeTransactionHandler implements HttpHandler {
+        public void handle(HttpExchange t) throws IOException {
+            byte [] response = "Pong!".getBytes();
+            //byte[] response = indexHTML.getBytes();
+            
+            System.out.println(t.getRequestURI().getQuery());
+            
+            StringBuilder sb = new StringBuilder();
+            InputStream argumentStream = t.getRequestBody();
+            int i;
+            while((i = argumentStream.read()) != -1) {
+                sb.append((char) i);
+            }
+            System.out.println("bbb: " + sb.toString());
+            
+            //JsonObject shoppingCart = gson.fromJson(sb.toString());
+            
+            t.sendResponseHeaders(200, response.length);
+            OutputStream os = t.getResponseBody();
+            
+            os.write(response);
+            os.close();
+        }
+    }
+    
+    static class getRewardPointsHandler implements HttpHandler {
+        public void handle(HttpExchange t) throws IOException {
+            byte [] response = "Pong!".getBytes();
+            //byte[] response = indexHTML.getBytes();
+            
+            /*Map<String,String> arguments = queryToMap(t.getRequestURI().getQuery());
+            if(arguments.containsKey("phoneNumber")) {
+                int phone = Integer.getInteger(arguments.get("phoneNumber"));
+                rewards rewardAccount = database.enroll(phone);
+                double points = rewardAccount.getBalance();
+                response = String.valueOf(points).getBytes();
+                System.out.println("Phone number "+phone+" has "+points+" reward points");
+            } else {
+                System.out.println("Malformed request!");
+                response = "Malformed request!".getBytes();
+            }*/
             
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();

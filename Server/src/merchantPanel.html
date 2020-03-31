@@ -1,7 +1,7 @@
 <HTML>
 	<link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen"/>
 	<head>
-	
+		<meta charset="UTF-8">
 	</head>
 	<body>
 		<p>Hello, world!</p>
@@ -103,6 +103,18 @@
 					document.getElementById("shoppingCartContainer").style.visibility = "hidden";
 				} else if(e.data.dataType == "finalizeTransaction") {
 					// Report to server
+					editedShoppingCart = {};
+					for( [k, v] of Object.entries(shoppingCart) ) {
+						editedShoppingCart[k] = {
+							"a":"a"
+						}
+					}
+					
+					const http = new XMLHttpRequest();
+					var url = "/finalizetransaction";
+					url = url + "?phoneNumber="+e.data.data.phoneNumber+"&transactionType="+e.data.data.transactionType;
+					http.open("POST",url);
+					http.send(JSON.stringify(shoppingCart));
 					
 					for( [k, v] of Object.entries(shoppingCart) ) {
 						removeFromShoppingCart(v.UID);
