@@ -11,7 +11,7 @@
 		<button id="pingButton">Click me to ping!</button>
 		</br>
 		<button id="manageRewardsButton">Manage Rewards</button>
-		<button>Sticky Item</button>
+		<button id="testButton">Hidden Test Button</button>
 		
 		</br>
 		
@@ -34,7 +34,7 @@
 		<script>
 			document.getElementById("pingButton").onclick = function() {
 				const http = new XMLHttpRequest();
-				const url = "http://127.0.0.1:8000";
+				var url = "/ping";
 				http.open("GET",url);
 				http.send("ping");
 				
@@ -54,6 +54,10 @@
 				} else {
 					panel.style.visibility = "visible"
 				}
+			}
+			
+			document.getElementById("testButton").onclick = function() {
+				
 			}
 		</script>
 	</body>

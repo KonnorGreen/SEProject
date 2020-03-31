@@ -31,8 +31,25 @@
 		
 		<div id="customerVerificationForm" class="collapsableForm">
 			<form>
+				<label for="customerPhoneNumber">Customer's phone number</label>
+				<br>
 				<input type="tel" id="customerPhoneNumber">
-				<input type="submit" value="Send SMS">
+				<br>
+				
+				<label for="customerPhoneCarrier">Customer's phone carrier</label>
+				<br>
+				<select id="customerPhoneCarrier">
+					<option value="tmobile">TMobile</option>
+					<option value="sprint">Sprint</option>
+					<option value="verizon">Verizon</option>
+					<option value="att">AT&T</option>
+				</select>
+				<br>
+				
+				<input type="button" id="customerVerificationSubmit" value="Send SMS">
+				<br>
+				
+				<p id="securityCode"></p>
 			</form>
 		</div>
 		
@@ -195,6 +212,25 @@
 				} else {
 					document.getElementById("cashSubmissionButton").disabled = false;
 					document.getElementById("changeDue").innerHTML = "Change due: $" + difference;
+				}
+			}
+			
+			document.getElementById("customerVerificationSubmit").onclick = function() {
+				var phoneNumber = document.getElementById("customerPhoneNumber").value
+				var carrier = document.getElementById("customerPhoneCarrier").value
+			
+				const http = new XMLHttpRequest();
+				var url = "/sendsms";
+				url = url + "?phoneNumber="+phoneNumber+"&carrier="+carrier;
+				http.open("GET",url);
+				http.send("Hi!");
+				
+				console.log("SMS has been sent to " + url + " !");
+				
+				http.onreadystatechange = function() {
+					if(this.readyState == 4 && this.status == 200) {
+						document.getElementById("securityCode").innerHTML = "Customer security code is "+http.responseText;
+					}
 				}
 			}
 		</script>
