@@ -10,8 +10,26 @@
 		<button>Reports</button>
 		<button id="pingButton">Click me to ping!</button>
 		</br>
+		<button id="manageRewardsButton">Manage Rewards</button>
 		<button>Sticky Item</button>
-		<button>Sticky Item</button>
+		
+		</br>
+		
+		<div id="rewardsFrame" class="collapsableForm" style="visibility: hidden">
+			<form>
+				<label for="pointsPerDollarSpent">Reward points earned per dollar spent</label>
+				<br>
+				<input type="number" id="pointsPerDollarSpent" min="0.00" step="0.01">
+				<br>
+				
+				<label for="dollarsPerPointSpent">Credit in dollars per reward point spent</label>
+				<br>
+				<input type="number" id="dollarsPerPointSpent" min="0.00" step="0.01">
+				<br>
+				
+				<input type="submit" value="Update Settings">
+			</form>
+		</div>
 		
 		<script>
 			document.getElementById("pingButton").onclick = function() {
@@ -26,6 +44,15 @@
 					if(this.readyState == 4 && this.status == 200) {
 						console.log(http.responseText);
 					}
+				}
+			}
+			
+			document.getElementById("manageRewardsButton").onclick = function() {
+				var panel = document.getElementById("rewardsFrame")
+				if (panel.style.visibility == "visible") {
+					panel.style.visibility = "hidden"
+				} else {
+					panel.style.visibility = "visible"
 				}
 			}
 		</script>

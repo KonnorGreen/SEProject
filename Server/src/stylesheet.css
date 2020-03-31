@@ -2,12 +2,29 @@ p {
 	color: green;
 }
 
-iframe {
-	width: 100%;
-	height: 50%;
+/* https://stackoverflow.com/questions/8117761/how-can-i-make-an-iframe-resizable/60803488#60803488 */
+
+.resizer {
+	display: flex;
+	margin: 0;
+	padding: 0;
+	resize: vertical;
+	overflow: hidden;
 }
 
-#shoppingCartIFrame {
+.resizer > .resized {
+	flex-grow: 1;
+	margin: 0;
+	padding: 0;
+	border: 1px black solid;
+}
+
+iframe {
+	width: 100%;
+	height: 100%;
+}
+
+#shoppingCartContainer {
 	visibility: hidden;
 }
 

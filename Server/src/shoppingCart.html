@@ -24,7 +24,7 @@
 		</table>
 		<button id="payByCardButton">Credit/Debit</button>
 		<button id="payByCashButton">Cash</button>
-		<button>Void</button>
+		<button id="void">Void</button>
 		<button id="customerLogInButton">Log In Customer Account</button>
 		
 		</br>
@@ -43,13 +43,13 @@
 				<input type="number" id="cashGiven" min="0.00" step="0.01">
 				<br>
 				<p id="changeDue"></p>
-				<input type="submit" value="Confirm Transaction">
+				<input id="cashSubmissionButton" type="submit" value="Confirm Transaction" disabled="true" onclick="confirmTransaction('cash');">
 			</form>
 		</div>
 		
 		<div id="cardSubmissionForm" class="collapsableForm">
 			<form>
-				<input type="submit" value="Confirm Transaction">
+				<input type="submit" value="Confirm Transaction" onclick="confirmTransaction('card');">
 			</form>
 		</div>
 		
@@ -79,15 +79,21 @@
 				productName.innerHTML = itemData.displayName;
 				
 				// Insert the input field for the amount spinner and hook up the onchange function
-				productQuantity.innerHTML = '<input id="spinner" type="number" value="'+itemData.amount+'" min="0" step="1">'
-				productQuantity.onchange = function() { 
-					var amount = productQuantity.childNodes.item("spinner").value
+				productQuantity.innerHTML = '<button id="cancelButton">X</button><input id="spinner" type="number" value="'+itemData.amount+'" min="0" step="1">'
+				productQuantity.childNodes[0].onclick = function() { 
+					var result = window.confirm("Are you sure you want to remove "+itemData.displayName+" from the shopping cart?");
+					if (result) {
+						sendDataToParent("productSpinnerUpdate",{"UID": itemData.UID, "amount": -1})
+					}
+				}
+				productQuantity.childNodes[1].onchange = function() { 
+					var amount = productQuantity.childNodes[1].value
 					if (amount <= 0) {
 						var result = window.confirm("Are you sure you want to remove "+itemData.displayName+" from the shopping cart?");
 						if (result) {
-							sendDataToParent("productSpinnerUpdate",{"UID": itemData.UID, "amount": amount})
+							sendDataToParent("productSpinnerUpdate",{"UID": itemData.UID, "amount": -1})
 						} else {
-							productQuantity.childNodes.item("spinner").value = 1;
+							productQuantity.childNodes[1].value = 1;
 						}
 					} else {
 						sendDataToParent("productSpinnerUpdate",{"UID": itemData.UID, "amount": amount})
@@ -128,6 +134,11 @@
 				document.getElementById("cardSubmissionForm").style.display = "none";
 			}
 			
+			function confirmTransaction(transactionType) {
+				wasMerchantNotifiedToLogInCustomer = false;
+				sendDataToParent("finalizeTransaction",transactionType);
+			}
+			
 			hideAllForms();
 		
 			// Returns the new state of visiblity, true for visible, false for invisible
@@ -166,20 +177,25 @@
 				toggleElementVisibility("cardSubmissionForm")
 			}
 			
+			document.getElementById("void").onclick = function() {
+				sendDataToParent("eraseShoppingCart",null);
+			}
+			
 			document.getElementById("cashGiven").onchange = function() {
 				var dollars = document.getElementById("cashGiven").value - totalDue;
 				var cents = dollars * 100;
 				var difference = Math.round(cents)/100;
 				
 				if (difference < 0 ) {
+					document.getElementById("cashSubmissionButton").disabled = true;
 					document.getElementById("changeDue").innerHTML = "Not enough cash to cover total, $" + Math.abs(difference) + " short!";
 				} else if (difference == 0) {
+					document.getElementById("cashSubmissionButton").disabled = false;
 					document.getElementById("changeDue").innerHTML = "No change due!";
 				} else {
+					document.getElementById("cashSubmissionButton").disabled = false;
 					document.getElementById("changeDue").innerHTML = "Change due: $" + difference;
 				}
-				
-				
 			}
 		</script>
 	</body>
