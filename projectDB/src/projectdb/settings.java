@@ -13,12 +13,12 @@ public class settings {
     double pointsPerDollar;
     double dollarsPerPoint;
     String profileName;
-    
-    public void settings(String name){
+
+    settings(String name){
         profileName = name;
     }
     
-    public String getProfileName(String name){
+    public String getProfileName(){
         return profileName;
     }
 

@@ -14,19 +14,19 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class rewards implements Serializable{
-    int phone;
+    long phone;
     double balance;
     String custName;
     ArrayList<Integer> transactionHistory;
 
-    public rewards(int phone) {
+    public rewards(long phone) {
         this.phone = phone;
-        transactionHistory = new ArrayList<Integer>();
+        transactionHistory = new ArrayList<>();
     }
     
     public void reset(){
         balance = 0.0;
-        transactionHistory = new ArrayList<Integer>();
+        transactionHistory = new ArrayList<>();
     }
 
     public double getBalance() {
@@ -49,7 +49,7 @@ public class rewards implements Serializable{
         return transactionHistory;
     }
 
-    public int getPhone() {
+    public long getPhone() {
         return phone;
     }
     
@@ -57,10 +57,11 @@ public class rewards implements Serializable{
         transactionHistory.add((Integer)transactionID);
     }
     
-    public void removeTransaction(Integer transactionID){
+    public void removeTransaction(int transactionID){
+        Integer transID = (Integer)transactionID;
         int index = -1;
         for(int i = 0; i < transactionHistory.size();i++){
-            if(Objects.equals(transactionID, transactionHistory.get(i))){
+            if(Objects.equals(transID, transactionHistory.get(i))){
                 index = i;
             }
         }

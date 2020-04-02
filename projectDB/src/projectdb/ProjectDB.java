@@ -11,18 +11,22 @@ package projectdb;
  */
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.util.Scanner;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+//import java.io.FileNotFoundException;
+//import java.util.Scanner;
 
 public class ProjectDB {
+    public static void main(String[] args) {
+        rewardsEnroll(5);
+        System.out.print("Say something\n");
+    }
     merchant loadedMerchant;
     product loadedProduct;
-    rewards loadedRewards;
+    static rewards loadedRewards;
     settings loadedSettings;
     transaction loadedTransaction;
     
@@ -161,7 +165,10 @@ public class ProjectDB {
 
 
     //rewards
-    public boolean rewardsExists(ArrayList<rewards> temp, int phone){
+    public static boolean rewardsExists(ArrayList<rewards> temp, long phone){
+        if(temp == null){
+            return false;
+        }
         for(rewards r : temp){
             if(phone == r.getPhone()){
                 return true;
@@ -170,7 +177,7 @@ public class ProjectDB {
         return false;
     }
     
-    public void rewardsEnroll(int phone){
+    public static void rewardsEnroll(long phone){
         ArrayList<rewards> temp = readFile("rewards.pdb");
         if(rewardsExists(temp, phone)){
             loadRewards(phone);
@@ -181,88 +188,92 @@ public class ProjectDB {
         }
     }
 
-    public boolean rewardsLoaded(int phone){
-        if(loadedRewards.getPhone() == phone){
-            return true;
-        }
-        return false;
+//    public boolean rewardsLoaded(long ph){
+//        if(loadedRewards.getPhone() == phone){
+//            return true;
+//        }
+//        return false;
+//    }
+    
+    public static void loadRewards(long phone){
+        ArrayList<rewards> temp = readFile("rewards.pdb");
+        temp.stream().filter((r) -> (phone == r.getPhone())).forEachOrdered((r) -> {
+            loadedRewards = r;
+        });
     }
     
-    public void loadRewards(int phone){
+    public static void saveRewards(){
         ArrayList<rewards> temp = readFile("rewards.pdb");
-        for(rewards r : temp){
-            if(phone == r.getPhone()){
-                loadedRewards = r;
-            }
-        }
-    }
-    
-    public void saveRewards(){
-        ArrayList<rewards> temp = readFile("rewards.pdb");
-        int phone = loadedRewards.getPhone();
+        long phone = loadedRewards.getPhone();
         int index = -1;
-        for(int i = 0; i < temp.size(); i++){
-            if(phone == temp.get(i).getPhone()){
-                index = i;
+        if(temp != null){
+            System.out.println(temp.size());
+            for(int i = 0; i < temp.size(); i++){
+                if(phone == temp.get(i).getPhone()){
+                    index = i;
+                }
             }
+            if(index > -1){
+                temp.remove(index);
+            }
+            temp.add(loadedRewards);
         }
-        if(index > -1){
-            temp.remove(index);
-        }
+//        System.out.println(loadedRewards == null);
+        temp = new ArrayList<>();
         temp.add(loadedRewards);
         saveFile(temp, "rewards.pdb");
     }
     
-    public void addTransaction(int phone, int transactionID){
+    public void addTransaction(long phone, int transactionID){
         if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
         loadedRewards.addTransaction(transactionID);
     }
     
-    public double getBalance(int phone){
+    public double getBalance(long phone){
         if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
         return loadedRewards.getBalance();
     }
 
-    public String getCustName(int phone){
+    public String getCustName(long phone){
         if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
         return loadedRewards.getCustName();
     }
     
-    public ArrayList<Integer> getTransactionHistory(int phone){
+    public ArrayList<Integer> getTransactionHistory(long phone){
         if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
         return loadedRewards.getTransactionHistory();
     }
     
-    public void removeTransaction(int phone, int transactionID){
+    public void removeTransaction(long phone, int transactionID){
         if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
         loadedRewards.removeTransaction(transactionID);
     }
     
-    public void resetRewards(int phone){
+    public void resetRewards(long phone){
         if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
         loadedRewards.reset();
     }
     
-    public void setRewardsBalance(int phone, double balance){
+    public void setRewardsBalance(long phone, double balance){
         if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
         loadedRewards.setBalance(balance);
     }
     
-    public void setCustName(int phone, String name){
+    public void setCustName(long phone, String name){
             if(phone != loadedRewards.getPhone()){
             loadRewards(phone);
         }
@@ -270,6 +281,9 @@ public class ProjectDB {
     }
 
     //products
+    
+    
+    
 //temporary to eliminate errors    
 public static String getDescription(int productID){
     return null;
@@ -378,17 +392,19 @@ public static double getPrice(int productID){
     
 
     //other
-    public ArrayList readFile(String filename){
+    public static ArrayList readFile(String filename){
         ArrayList temp = null;
         File myfile = new File(filename);
+        System.out.println(myfile.getAbsolutePath());
         if(!myfile.exists()){
             try{ 
                 myfile.createNewFile();
             }
             catch(IOException e){
-                System.out.println("An error occurred.");
+                System.out.println("An error occurred in readFile() try block 1.");
             }
         }
+        if(myfile.length() > 0){
         try{
             FileInputStream fis = new FileInputStream(myfile);
             ObjectInputStream ois = new ObjectInputStream(fis);
@@ -396,12 +412,12 @@ public static double getPrice(int productID){
             ois.close();
         }
         catch(IOException | ClassNotFoundException e){
-            System.out.println("An error occurred.");
-        }
+            System.out.println("An error occurred in readFile() try block 2.");
+        }}
         return temp;
     }
     
-    public void saveFile(ArrayList mylist, String fileName){
+    public static void saveFile(ArrayList mylist, String fileName){
         try{
             FileOutputStream fos = new FileOutputStream(fileName);
             ObjectOutputStream out = new ObjectOutputStream(fos);
