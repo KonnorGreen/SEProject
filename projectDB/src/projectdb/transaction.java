@@ -113,7 +113,7 @@ public class transaction implements Serializable{
             this.transItemID = transItemID;
             this.productID = productID;
             this.quant = quant;
-            description = ProjectDB.getDescription(productID);
+            description = ProjectDB.getProductDescription(productID);
             price = ProjectDB.getPrice(productID);
         }
             

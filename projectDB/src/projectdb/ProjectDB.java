@@ -21,14 +21,19 @@ import java.util.ArrayList;
 
 public class ProjectDB {
     public static void main(String[] args) {
-        rewardsEnroll(5);
-        System.out.print("Say something\n");
+        int id = createProduct();
+        setImageFolder(id,"test");
+        setImageName(id,"this.jpg");
+        System.out.println(getImagePath(id));
+        System.out.println(loadedProduct.imageExists(getImagePath(id),getImageName(id)));
+        System.out.println(System.getProperty("file.separator"));
+        System.out.print("Hello world!\n");
     }
-    merchant loadedMerchant;
-    product loadedProduct;
+    static merchant loadedMerchant;
+    static product loadedProduct;
     static rewards loadedRewards;
-    settings loadedSettings;
-    transaction loadedTransaction;
+    static settings loadedSettings;
+    static transaction loadedTransaction;
     
     
 
@@ -40,7 +45,7 @@ public class ProjectDB {
         return false;
     }
     
-    public void createTransaction(){
+    public static int createTransaction(){
         int transactionID;
         String filename = "transaction.pdb";
         ArrayList<transaction> mylist = readFile(filename);
@@ -53,6 +58,7 @@ public class ProjectDB {
         transactionID++;
         loadedTransaction = new transaction(transactionID);
         saveTransaction();
+        return transactionID;
     }
     
     public void loadTransaction(int transID){
@@ -64,7 +70,7 @@ public class ProjectDB {
         }
     }
     
-    public void saveTransaction(){
+    public static void saveTransaction(){
         ArrayList<transaction> temp = readFile("transaction.pdb");
         int transID = loadedTransaction.getTransID();
         int index = -1;
@@ -188,12 +194,9 @@ public class ProjectDB {
         }
     }
 
-//    public boolean rewardsLoaded(long ph){
-//        if(loadedRewards.getPhone() == phone){
-//            return true;
-//        }
-//        return false;
-//    }
+    public boolean rewardsLoaded(long phone){
+        return loadedRewards.getPhone() == phone;
+    }
     
     public static void loadRewards(long phone){
         ArrayList<rewards> temp = readFile("rewards.pdb");
@@ -281,20 +284,175 @@ public class ProjectDB {
     }
 
     //products
+    public static int createProduct(){
+        int productID;
+        String fileName = "product.pdb";
+        ArrayList<product> mylist = readFile(fileName);
+        productID = -1;
+        if(mylist != null){
+            for (product p : mylist){
+                if(p.getProductID() > productID){
+                    productID = p.getProductID();
+                }
+            }
+        }
+        productID++;
+        loadedProduct = new product(productID);
+        saveProduct();
+        return productID;
+    }
+    
+    public static void loadProduct(int productID){
+        ArrayList<product> temp = readFile("product.pdb");
+        temp.stream().filter((p) -> (productID == p.getProductID())).forEachOrdered((p) -> {
+            loadedProduct = p;
+        });
+    }
+    
+    public static void saveProduct(){
+        ArrayList<product> temp = readFile("product.pdb");
+        int productID = loadedProduct.getProductID();
+        int index = -1;
+        if(temp != null){
+            for(int i = 0; i < temp.size(); i++){
+                if(productID == temp.get(i).getProductID()){
+                    index = i;
+                }
+            }
+            if(index > -1){
+                temp.remove(index);
+            }
+            temp.add(loadedProduct);
+        }
+        temp = new ArrayList<>();
+        temp.add(loadedProduct);
+        saveFile(temp, "product.pdb");
+    }
+    
+    public static boolean productLoaded(int productID){
+        return loadedProduct.getProductID() == productID;
+    }
+    
+    public static boolean productArchived(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        return loadedProduct.isArchived();
+    }
+    
+    public static void archiveProduct(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        loadedProduct.setArchived(true);
+        saveProduct();
+    }
+    
+    public static void setProductStock(int productID, int amnt){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        loadedProduct.setInStock(amnt);
+        saveProduct();
+    } 
+    
+    public static void setMinAge(int productID, int age){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        loadedProduct.setMinAge(age);
+        saveProduct();
+    }
+    
+    public static void setImageFolder(int productID, String folder){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        loadedProduct.setImagePath("images" + System.getProperty("file.separator") + folder);
+        saveProduct();
+    }
+    
+    public static void setImageName(int productID, String name){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        loadedProduct.setImageName(name);
+        saveProduct();
+    }
+    
+    public static int getStock(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        return loadedProduct.getInStock();
+    }
+    
+    public static int getMinAge(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        return loadedProduct.getMinAge();
+    }
+    
+    public static String getImagePath(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        if(imageExists(productID)){
+            return loadedProduct.getImagePath();
+        }
+        return "images";
+    }
+    
+    public static String getImageName(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        if(imageExists(productID)){
+            return loadedProduct.getImageName();
+        }
+        return "noImage.jpg";
+    }
+    
+    public static double getPrice(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        return loadedProduct.getPrice();
+    }
+    
+    public static void setPrice(int productID, double price){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        loadedProduct.setPrice(price);
+        saveProduct();
+    }
+    
+    public static String getProductDescription(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        return loadedProduct.getDescription();
+    }
+    
+    public static void setProductDescription(int productID, String desc){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        loadedProduct.setDescription(desc);
+        saveProduct();
+    }
+    
+    public static boolean imageExists(int productID){
+        if(!productLoaded(productID)){
+            loadProduct(productID);
+        }
+        return loadedProduct.imageExists(loadedProduct.getImagePath(), loadedProduct.getImageName());
+    }
+
     
     
-    
-//temporary to eliminate errors    
-public static String getDescription(int productID){
-    return null;
-}
-
-public static double getPrice(int productID){
-    return 0.0;
-}
-
-
-
 
     //merchants
 
@@ -388,6 +546,7 @@ public static double getPrice(int productID){
     
     
     
+    
             
     
 
@@ -395,7 +554,6 @@ public static double getPrice(int productID){
     public static ArrayList readFile(String filename){
         ArrayList temp = null;
         File myfile = new File(filename);
-        System.out.println(myfile.getAbsolutePath());
         if(!myfile.exists()){
             try{ 
                 myfile.createNewFile();
