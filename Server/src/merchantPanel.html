@@ -4,13 +4,13 @@
 		<meta charset="UTF-8">
 	</head>
 	<body>
-		<p>Hello, world!</p>
+		<p>Merchant Panel</p>
 		<input type="text" placeholder="Search..">
 		<br>
 		<button id="sticky1">Burrito</button>
 		<button id="sticky2">Taco</button>
 		<button id="sticky3">Nachos</button>
-		<button id="sticky4">Sticky Item</button>
+		<button id="sticky4">Beer</button>
 		<br>
 		<button>Sticky Item</button>
 		<button>Sticky Item</button>
@@ -21,11 +21,8 @@
 		<button>Sticky Item</button>
 		<button>Sticky Item</button>
 		<button>Sticky Item</button>
-		
 		</br>
-		
 		<button id="shoppingCartButton">Shopping Cart</button>
-		
 		</br>
 		
 		<div id="shoppingCartContainer" class="resizer">
@@ -35,8 +32,8 @@
 		<script>
 			var shoppingCart = [];
 			var shoppingCartUID = Math.floor(Math.random() * 100000000);
-			
-			// https://stackoverflow.com/questions/9153445/how-to-communicate-between-iframe-and-the-parent-site
+            
+            // https://stackoverflow.com/questions/9153445/how-to-communicate-between-iframe-and-the-parent-site
 			function sendDataToIFrame(frameID,sentDataType,sentData) {
 				/*var event = new CustomEvent("welborn_pushDataToFrame",{ data: sentData });
 				var iframe = document.getElementById(frameID);
@@ -78,6 +75,33 @@
 					}
 				}
 			}
+            
+            
+            function getAge(birthDateString) {
+                var today = new Date();
+                var birthDate = new Date(birthDateString);
+                var age = today.getFullYear() - birthDate.getFullYear();
+                var m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                    age--;
+                }
+                return age;
+            }
+
+    
+            function askAge() {
+                birthDateString= prompt("Enter Age in X/XX/XXXX Format: ");
+                if (birthDateString == null)
+                    return;
+                else if(getAge(birthDateString) >= 21) {
+                    alert("Customer is older than 21. Age: " + getAge(birthDateString));
+                    addToShoppingCart(beer)
+				document.getElementById("shoppingCartContainer").style.visibility = "visible";
+                } 
+                else {
+                    alert("Customer is younger than 21. Age: " + getAge(birthDateString));
+                }
+            }
 			
 			window.addEventListener("message",function(e) {
 				if (e.data.dataType == "productSpinnerUpdate") {
@@ -151,6 +175,13 @@
 				"amount": 1,
 			};
 			
+            var beer = {
+				"UID": 4,
+				"displayName": "Coors Lite",
+				"price": 3.00,
+				"amount": 1,
+			};
+            
 			document.getElementById("sticky1").onclick = function() {
 				addToShoppingCart(burrito)
 				document.getElementById("shoppingCartContainer").style.visibility = "visible";
@@ -164,6 +195,12 @@
 			document.getElementById("sticky3").onclick = function() {
 				addToShoppingCart(nacho)
 				document.getElementById("shoppingCartContainer").style.visibility = "visible";
+			}
+            
+            document.getElementById("sticky4").onclick = function() {
+                askAge();
+                //addToShoppingCart(beer)
+				//document.getElementById("shoppingCartContainer").style.visibility = "visible";
 			}
 		
 			document.getElementById("shoppingCartButton").onclick = function() {
