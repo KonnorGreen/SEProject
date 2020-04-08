@@ -16,36 +16,39 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
 //import java.io.FileNotFoundException;
 //import java.util.Scanner;
 
 public class ProjectDB {
     public static void main(String[] args) {
-        int id = createProduct();
-        setImageFolder(id,"test");
-        setImageName(id,"this.jpg");
-        System.out.println(getImagePath(id));
-        System.out.println(loadedProduct.imageExists(getImagePath(id),getImageName(id)));
-        System.out.println(System.getProperty("file.separator"));
-        System.out.print("Hello world!\n");
+        
     }
-    static merchant loadedMerchant;
-    static product loadedProduct;
-    static rewards loadedRewards;
-    static settings loadedSettings;
-    static transaction loadedTransaction;
+    private static merchant loadedMerchant;
+    private static int currentMerchant;
+    private static product loadedProduct;
+    private static int currentProduct;
+    private static rewards loadedRewards;
+    private static long currentRewards;
+    private static settings loadedSettings;
+    private static String currentSettings;
+    private static transaction loadedTransaction;
+    private static int currentTransaction;
+    private static ArrayList<transItem> loadedItemList;
+    private static int currentItemList;
+//    private static transItem loadedTransItem;
+//    private static int currentTransItem;
+    
     
     
 
     //transactions
-    public boolean transactionLoaded(int transID){
-        if(loadedTransaction.getTransID() == transID){
-            return true;
-        }
-        return false;
-    }
+//    public static boolean transactionLoaded(int transID){
+//        return loadedTransaction.getTransID() == transID;
+//    }
     
-    public static int createTransaction(){
+    public static void createTransaction(){
         int transactionID;
         String filename = "transaction.pdb";
         ArrayList<transaction> mylist = readFile(filename);
@@ -58,24 +61,22 @@ public class ProjectDB {
         transactionID++;
         loadedTransaction = new transaction(transactionID);
         saveTransaction();
-        return transactionID;
+        currentTransaction = transactionID;
     }
     
-    public void loadTransaction(int transID){
+    public static void loadTransaction(int transactionID){
         ArrayList<transaction> temp = readFile("transaction.pdb");
-        for(transaction t : temp){
-            if(transID == t.getTransID()){
-                loadedTransaction = t;
-            }
-        }
+        temp.stream().filter((t) -> (transactionID == t.getTransID())).forEachOrdered((t) -> {
+            loadedTransaction = t;
+        });
+        currentTransaction = transactionID;
     }
     
     public static void saveTransaction(){
         ArrayList<transaction> temp = readFile("transaction.pdb");
-        int transID = loadedTransaction.getTransID();
         int index = -1;
         for(int i = 0; i < temp.size();i++){
-            if(transID == temp.get(i).getTransID()){
+            if(currentTransaction == temp.get(i).getTransID()){
                 index = i;
             }
         }
@@ -86,86 +87,160 @@ public class ProjectDB {
         saveFile(temp, "transaction.pdb");
     }
     
+    public static LocalDateTime getDate(int transactionID){
+        if(currentTransaction != transactionID){
+            loadTransaction(transactionID);
+        }
+    return loadedTransaction.getTransDate();
+}
     
-    
-    public void voidTransaction(int transactionID){
-        if(!transactionLoaded(transactionID)){
+    public static void voidTransaction(int transactionID){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         loadedTransaction.setVoided(true);
         saveTransaction();
     }
     
-    public double getSubtotal(int transactionID){
-        if(!transactionLoaded(transactionID)){
+    public boolean isVoided(int transactionID){
+        if(currentTransaction != transactionID){
+            loadTransaction(transactionID);
+        }
+        return loadedTransaction.isVoided();
+    }
+    
+    
+    public static double getSubtotal(int transactionID){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         return loadedTransaction.getSub();
     }
     
-    public void setSubtotal(int transactionID, double sub){
-        if(!transactionLoaded(transactionID)){
+    public static void setSubtotal(int transactionID, double sub){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         loadedTransaction.setSub(sub);
+        saveTransaction();
     }
     
-    public double getTax(int transactionID){
-        if(!transactionLoaded(transactionID)){
+    public static double getTax(int transactionID){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         return loadedTransaction.getTax();
     }
     
-    public void setTax(int transactionID, double tax){
-        if(!transactionLoaded(transactionID)){
+    public static void setTax(int transactionID, double tax){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         loadedTransaction.setTax(tax);
+        saveTransaction();
     }
     
-    public double getTotal(int transactionID){
-        if(!transactionLoaded(transactionID)){
+    public static double getTotal(int transactionID){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         return loadedTransaction.getTotal();
     }
     
-    public void setTotal(int transactionID, double total){
-        if(!transactionLoaded(transactionID)){
+    public static void setTotal(int transactionID, double total){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         loadedTransaction.setTotal(total);
+        saveTransaction();
     }
     
-    public int getPointsRedeemed(int transactionID){
-        if(!transactionLoaded(transactionID)){
+    public static int getPointsRedeemed(int transactionID){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         return loadedTransaction.getPointsRedeemed();
     }
     
-    public void setPointsRedeemed(int transactionID, int points){
-        if(!transactionLoaded(transactionID)){
+    public static void setPointsRedeemed(int transactionID, int points){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         loadedTransaction.setPointsRedeemed(points);
+        saveTransaction();
     }
     
-    public int getPointsEarned(int transactionID){
-        if(!transactionLoaded(transactionID)){
+    public static int getPointsEarned(int transactionID){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         return loadedTransaction.getPointsEarned();
     }
     
-    public void setPointsEarned(int transactionID, int points){
-        if(!transactionLoaded(transactionID)){
+    public static void setPointsEarned(int transactionID, int points){
+        if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         loadedTransaction.setPointsEarned(points);
+        saveTransaction();
     }
     
+    public static String printTransaction(int transactionID){
+        if(currentTransaction != transactionID){
+            loadTransaction(transactionID);
+        }
+        return loadedTransaction.toString();
+    }
+    
+    public static String dailyTransactionReport(String date){//date format "yyyy-MM-dd", example "2019-03-29"
+        LocalDate target = LocalDate.parse(date);
+        String output = "";
+        ArrayList<transaction> temp = readFile("transaction.pdb");
+        for(transaction t : temp){
+            if(target.isEqual(t.getTransDate().toLocalDate())){
+                output = output + t.toString() + "\n";
+            }
+        }
+        return output;
+    }
+    
+    public static String manyDayTransactionReport(String startDate, String endDate){//date format "yyyy-MM-dd", example "2019-03-29"
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = LocalDate.parse(endDate);
+        String output = "";
+        ArrayList<transaction> temp = readFile("transaction.pdb");
+        for(transaction t : temp){
+            LocalDate transDate = t.getTransDate().toLocalDate();
+            if(!transDate.isBefore(start) && !transDate.isAfter(end)){
+                output = output + t.toString() + "\n";
+            }
+        }
+        return output;
+    }
+    
+    public static void getTransItemList (int transactionID){
+        if(currentTransaction != transactionID){
+            loadTransaction(transactionID);
+        }
+        loadedItemList = loadedTransaction.getItemList();
+        currentItemList = transactionID;
+    }
+    
+        public int getTransItemID(transItem t){
+            return t.getTransItemID();
+        }
+        
+        public String getDescription(transItem t) {
+            return t.getDescription();
+        }
+
+        public int getQuant(transItem t) {
+            return t.getQuant();
+        }
+
+        public double getPrice(transItem t) {
+            return t.getPrice();
+        }
     
 
 
@@ -175,12 +250,7 @@ public class ProjectDB {
         if(temp == null){
             return false;
         }
-        for(rewards r : temp){
-            if(phone == r.getPhone()){
-                return true;
-            }
-        }
-        return false;
+        return temp.stream().anyMatch((r) -> (phone == r.getPhone()));
     }
     
     public static void rewardsEnroll(long phone){
@@ -191,100 +261,99 @@ public class ProjectDB {
         else{
             loadedRewards = new rewards(phone);
             saveRewards();
+            currentRewards = phone;
         }
     }
 
-    public boolean rewardsLoaded(long phone){
-        return loadedRewards.getPhone() == phone;
-    }
-    
     public static void loadRewards(long phone){
         ArrayList<rewards> temp = readFile("rewards.pdb");
         temp.stream().filter((r) -> (phone == r.getPhone())).forEachOrdered((r) -> {
             loadedRewards = r;
         });
+        currentRewards = phone;
     }
     
     public static void saveRewards(){
         ArrayList<rewards> temp = readFile("rewards.pdb");
-        long phone = loadedRewards.getPhone();
         int index = -1;
         if(temp != null){
             System.out.println(temp.size());
             for(int i = 0; i < temp.size(); i++){
-                if(phone == temp.get(i).getPhone()){
+                if(currentRewards == temp.get(i).getPhone()){
                     index = i;
                 }
             }
             if(index > -1){
                 temp.remove(index);
             }
-            temp.add(loadedRewards);
         }
-//        System.out.println(loadedRewards == null);
-        temp = new ArrayList<>();
         temp.add(loadedRewards);
         saveFile(temp, "rewards.pdb");
     }
     
     public void addTransaction(long phone, int transactionID){
-        if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
         loadedRewards.addTransaction(transactionID);
+        saveRewards();
     }
     
     public double getBalance(long phone){
-        if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
         return loadedRewards.getBalance();
     }
 
     public String getCustName(long phone){
-        if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
         return loadedRewards.getCustName();
     }
     
     public ArrayList<Integer> getTransactionHistory(long phone){
-        if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
         return loadedRewards.getTransactionHistory();
     }
     
     public void removeTransaction(long phone, int transactionID){
-        if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
         loadedRewards.removeTransaction(transactionID);
+        saveRewards();
     }
     
     public void resetRewards(long phone){
-        if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
         loadedRewards.reset();
+        saveRewards();
     }
     
     public void setRewardsBalance(long phone, double balance){
-        if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
         loadedRewards.setBalance(balance);
+        saveRewards();
     }
     
     public void setCustName(long phone, String name){
-            if(phone != loadedRewards.getPhone()){
+        if(phone != currentRewards){
             loadRewards(phone);
         }
             loadedRewards.setCustName(name);
+            saveRewards();
     }
 
     //products
-    public static int createProduct(){
+    public static void createProduct(){
         int productID;
         String fileName = "product.pdb";
         ArrayList<product> mylist = readFile(fileName);
@@ -299,7 +368,7 @@ public class ProjectDB {
         productID++;
         loadedProduct = new product(productID);
         saveProduct();
-        return productID;
+        currentProduct = productID;
     }
     
     public static void loadProduct(int productID){
@@ -307,41 +376,39 @@ public class ProjectDB {
         temp.stream().filter((p) -> (productID == p.getProductID())).forEachOrdered((p) -> {
             loadedProduct = p;
         });
+        currentProduct = productID;
     }
     
     public static void saveProduct(){
         ArrayList<product> temp = readFile("product.pdb");
-        int productID = loadedProduct.getProductID();
         int index = -1;
         if(temp != null){
             for(int i = 0; i < temp.size(); i++){
-                if(productID == temp.get(i).getProductID()){
+                if(currentProduct == temp.get(i).getProductID()){
                     index = i;
                 }
             }
             if(index > -1){
                 temp.remove(index);
             }
-            temp.add(loadedProduct);
         }
-        temp = new ArrayList<>();
         temp.add(loadedProduct);
         saveFile(temp, "product.pdb");
     }
     
-    public static boolean productLoaded(int productID){
-        return loadedProduct.getProductID() == productID;
-    }
-    
+//    public static boolean productLoaded(int productID){
+//        return loadedProduct.getProductID() == productID;
+//    }
+//    
     public static boolean productArchived(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         return loadedProduct.isArchived();
     }
     
     public static void archiveProduct(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         loadedProduct.setArchived(true);
@@ -349,7 +416,7 @@ public class ProjectDB {
     }
     
     public static void setProductStock(int productID, int amnt){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         loadedProduct.setInStock(amnt);
@@ -357,7 +424,7 @@ public class ProjectDB {
     } 
     
     public static void setMinAge(int productID, int age){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         loadedProduct.setMinAge(age);
@@ -365,7 +432,7 @@ public class ProjectDB {
     }
     
     public static void setImageFolder(int productID, String folder){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         loadedProduct.setImagePath("images" + System.getProperty("file.separator") + folder);
@@ -373,7 +440,7 @@ public class ProjectDB {
     }
     
     public static void setImageName(int productID, String name){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         loadedProduct.setImageName(name);
@@ -381,21 +448,21 @@ public class ProjectDB {
     }
     
     public static int getStock(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         return loadedProduct.getInStock();
     }
     
     public static int getMinAge(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         return loadedProduct.getMinAge();
     }
     
     public static String getImagePath(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         if(imageExists(productID)){
@@ -405,7 +472,7 @@ public class ProjectDB {
     }
     
     public static String getImageName(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         if(imageExists(productID)){
@@ -415,14 +482,14 @@ public class ProjectDB {
     }
     
     public static double getPrice(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         return loadedProduct.getPrice();
     }
     
     public static void setPrice(int productID, double price){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         loadedProduct.setPrice(price);
@@ -430,14 +497,14 @@ public class ProjectDB {
     }
     
     public static String getProductDescription(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         return loadedProduct.getDescription();
     }
     
     public static void setProductDescription(int productID, String desc){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
         loadedProduct.setDescription(desc);
@@ -445,37 +512,120 @@ public class ProjectDB {
     }
     
     public static boolean imageExists(int productID){
-        if(!productLoaded(productID)){
+        if(currentProduct != productID){
             loadProduct(productID);
         }
-        return loadedProduct.imageExists(loadedProduct.getImagePath(), loadedProduct.getImageName());
+        return loadedProduct.imageExists();
     }
 
     
     
 
     //merchants
-
+    public static void createMerchant(){
+        int merchantID;
+        String fileName = "merchant.pdb";
+        ArrayList<merchant> mylist = readFile(fileName);
+        merchantID = -1;
+        if(mylist != null){
+            for (merchant m : mylist){
+                if(m.getMerchantID() > merchantID){
+                    merchantID = m.getMerchantID();
+                }
+            }
+        }
+        merchantID++;
+        loadedMerchant = new merchant(merchantID);
+        saveMerchant();
+        currentMerchant = merchantID;
+    }
+    
+    public static void loadMerchant(int merchantID){
+        ArrayList<merchant> temp = readFile("merchant.pdb");
+        temp.stream().filter((m) -> (merchantID == m.getMerchantID())).forEachOrdered((m) -> {
+            loadedMerchant = m;
+        });
+        currentMerchant = merchantID;
+    }
+    
+    public static void saveMerchant(){
+        ArrayList<merchant> temp = readFile("merchant.pdb");
+        int index = -1;
+        if(temp != null){
+            for(int i = 0; i < temp.size(); i++){
+                if(currentMerchant == temp.get(i).getMerchantID()){
+                    index = i;
+                }
+            }
+            if(index > -1){
+                temp.remove(index);
+            }
+        }
+        temp.add(loadedMerchant);
+        saveFile(temp, "merchant.pdb");
+    }
+    
+//    public static boolean merchantLoaded(int merchantID){
+//        return loadedMerchant.getMerchantID() == merchantID;
+//    }
+//
+    public static String getMerchantPassword(int merchantID){
+        if(merchantID != currentMerchant){
+            loadMerchant(merchantID);
+        }
+        return loadedMerchant.getPassword();
+    }
+    
+    public static void setMerchantPassword(int merchantID, String password){
+        if(merchantID != currentMerchant){
+            loadMerchant(merchantID);
+        }
+        loadedMerchant.setPassword(password);
+        saveMerchant();
+    }
+    
+    public static boolean isAdmin(int merchantID){
+        if(merchantID != currentMerchant){
+            loadMerchant(merchantID);
+        }
+        return loadedMerchant.isAdmin();
+    }
+    
+    public static void setAdmin(int merchantID, boolean status){
+        if(merchantID != currentMerchant){
+            loadMerchant(merchantID);
+        }
+        loadedMerchant.setAdmin(status);
+        saveMerchant();
+    }
+    
+    public static String getMerchantName(int merchantID){
+        if(merchantID != currentMerchant){
+            loadMerchant(merchantID);
+        }
+        return loadedMerchant.getMerchantName();
+    }
+    
+    public static void setMerchantName(int merchantID, String name){
+        if(merchantID != currentMerchant){
+            loadMerchant(merchantID);
+        }
+        loadedMerchant.setMerchantName(name);
+        saveMerchant();
+    }
+    
+    
+    
 
 
     //settings
-    public boolean settingsExists(String profileName){
-        ArrayList<settings> temp = readFile("settings.pdb");
-        for(settings s : temp){
-            if(profileName.equals(s.getProfileName())){
-                return true;
-            }
-        }
-        return false;
-    }
-    
+//    public boolean settingsExists(String profileName){
+//        ArrayList<settings> temp = readFile("settings.pdb");
+//        return temp.stream().anyMatch((s) -> (profileName.equals(s.getProfileName())));
+//    }
+//    
     public boolean settingsExists(ArrayList<settings> temp, String profileName){
-        for(settings s : temp){
-            if(profileName.equals(s.getProfileName())){
-                return true;
-            }
-        }
-        return false;
+        return temp.stream().anyMatch((s) -> (profileName.equals(s.getProfileName())));
     }
     
     public void createSettings(String profileName){
@@ -487,23 +637,22 @@ public class ProjectDB {
             loadedSettings = new settings(profileName);
             saveSettings();
         }
+        currentSettings = profileName;
     }
     
     public void loadSettings(String profileName){
         ArrayList<settings> temp = readFile("settings.pdb");
-        for(settings s : temp){
-            if(profileName.equals(s.getProfileName())){
-                loadedSettings = s;
-            }
-        }
+        temp.stream().filter((s) -> (profileName.equals(s.getProfileName()))).forEachOrdered((s) -> {
+            loadedSettings = s;
+        });
+        currentSettings = profileName;
     }
     
     public void saveSettings(){
         ArrayList<settings> temp = readFile("settings.pdb");
-        String name = loadedSettings.getProfileName();
         int index = -1;
         for(int i = 0; i < temp.size();i++){
-            if(name.equals(temp.get(i).getProfileName())){
+            if(currentSettings.equals(temp.get(i).getProfileName())){
                 index = i;
             }
         }
@@ -515,7 +664,7 @@ public class ProjectDB {
     }
 
     public void setPointsPerDollar(String profileName, double PointsPerDollar){
-        if(!profileName.equals(loadedSettings.getProfileName())){
+        if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
         loadedSettings.setPointsPerDollar(PointsPerDollar);
@@ -523,14 +672,14 @@ public class ProjectDB {
     }
     
     public double getPointsPerDollar(String profileName){
-        if(!profileName.equals(loadedSettings.getProfileName())){
+        if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
         return loadedSettings.getPointsPerDollar();
     }
     
     public void setDollarsPerPoint(String profileName, double dollarsPerPoint){
-            if(!profileName.equals(loadedSettings.getProfileName())){
+        if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
             loadedSettings.setDollarsPerPoint(dollarsPerPoint);
@@ -538,7 +687,7 @@ public class ProjectDB {
     }
     
     public double getDollarsPerPoint(String profileName){
-        if(!profileName.equals(loadedSettings.getProfileName())){
+        if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
         return loadedSettings.getDollarsPerPoint();
@@ -587,9 +736,6 @@ public class ProjectDB {
             }
     }
     
-    public boolean isVoided(transaction t){
-        return t.isVoided();
-    }
     
 
     

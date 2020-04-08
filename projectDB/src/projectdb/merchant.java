@@ -14,10 +14,10 @@ import java.io.Serializable;
 //import java.util.ArrayList;
 
 public class merchant implements Serializable{
-    int merchantID;
-    String password;
-    boolean admin;
-    String merchantName;
+    private int merchantID;
+    private String password;
+    private boolean admin;
+    private String merchantName;
 
     public merchant(int merchantID) {
         this.merchantID = merchantID;

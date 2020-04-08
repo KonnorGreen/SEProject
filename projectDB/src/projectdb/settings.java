@@ -10,9 +10,9 @@ package projectdb;
  * @author anazo
  */
 public class settings {
-    double pointsPerDollar;
-    double dollarsPerPoint;
-    String profileName;
+    private double pointsPerDollar;
+    private double dollarsPerPoint;
+    private String profileName;
 
     settings(String name){
         profileName = name;

@@ -14,10 +14,10 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class rewards implements Serializable{
-    long phone;
-    double balance;
-    String custName;
-    ArrayList<Integer> transactionHistory;
+    private long phone;
+    private double balance;
+    private String custName;
+    private ArrayList<Integer> transactionHistory;
 
     public rewards(long phone) {
         this.phone = phone;

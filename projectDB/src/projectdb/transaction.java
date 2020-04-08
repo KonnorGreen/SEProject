@@ -14,15 +14,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class transaction implements Serializable{
-    int transID;
-    LocalDateTime transTime;
-    ArrayList<transItem> itemList;
-    double sub;
-    double tax;
-    double total;
-    int pointsRedeemed;
-    int pointsEarned;
-    boolean voided;
+    private final int transID;
+    private final LocalDateTime transTime;
+    private ArrayList<transItem> itemList;
+    private double sub;
+    private double tax;
+    private double total;
+    private int pointsRedeemed;
+    private int pointsEarned;
+    private boolean voided;
 
     public transaction(int transID) {
         this.transID = transID;
@@ -101,29 +101,57 @@ public class transaction implements Serializable{
             itemList.remove(index);
         }
     }
-    
-    private class transItem{
-        int transItemID;
-        int productID;
-        String description;
-        int quant;
-        double price;
 
-        public transItem(int transItemID, int productID, int quant) {
-            this.transItemID = transItemID;
-            this.productID = productID;
-            this.quant = quant;
-            description = ProjectDB.getProductDescription(productID);
-            price = ProjectDB.getPrice(productID);
-        }
-            
-        public int getTransItemID(){
-            return transItemID;
-        }
-
-        
-    
+    public ArrayList<transItem> getItemList() {
+        return itemList;
     }
     
-    
+//    private class transItem{
+//        private final int transItemID;
+//        private final int productID;
+//        private final String description;
+//        private final int quant;
+//        private final double price;
+//
+//        public transItem(int transItemID, int productID, int quant) {
+//            this.transItemID = transItemID;
+//            this.productID = productID;
+//            this.quant = quant;
+//            description = ProjectDB.getProductDescription(productID);
+//            price = ProjectDB.getPrice(productID);
+//        }
+//            
+//        public int getTransItemID(){
+//            return transItemID;
+//        }
+//        
+//        public String getDescription() {
+//            return description;
+//        }
+//
+//        public int getQuant() {
+//            return quant;
+//        }
+//
+//        public double getPrice() {
+//            return price;
+//        }
+//    }
+
+    @Override
+    public String toString() {
+        String output = "Transaction ID:\t" + transID + "\t" + transTime + "\n";
+        for(transItem t : itemList){
+            output = output + t.toString() + "\n";
+        }
+        if(isVoided()){
+            output = output + "VOIDED!!!\n";
+        }
+        output = output + "Subtotal:\t" + sub + "\n";
+        output = output + "Tax:\t" + tax + "\n";
+        output = output + "Total:\t" + total + "\n";
+        output = output + "Points Redeemed:\t" + pointsRedeemed + "\n";
+        output = output + "Points Earned:\t" + pointsEarned + "\n";
+        return output;
+    }
 }

@@ -95,8 +95,8 @@ public class product implements Serializable{
         this.description = description;
     }
     
-    public boolean imageExists(String dir, String name){
-        File myfile = new File(dir, name);
+    public boolean imageExists(){
+        File myfile = new File(imagePath, imageName);
         return myfile.exists();
     }
     
