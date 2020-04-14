@@ -32,6 +32,7 @@
 		<script>
 			var shoppingCart = [];
 			var shoppingCartUID = Math.floor(Math.random() * 100000000);
+			var customerAge = null;
             
             // https://stackoverflow.com/questions/9153445/how-to-communicate-between-iframe-and-the-parent-site
 			function sendDataToIFrame(frameID,sentDataType,sentData) {
@@ -89,17 +90,19 @@
             }
 
     
-            function askAge() {
-                birthDateString= prompt("Enter Age in X/XX/XXXX Format: ");
+            function askAge(item) {
+                birthDateString= prompt("Enter Age in MM/DD/YYYY Format: ");
                 if (birthDateString == null)
                     return;
-                else if(getAge(birthDateString) >= 21) {
-                    alert("Customer is older than 21. Age: " + getAge(birthDateString));
-                    addToShoppingCart(beer)
-				document.getElementById("shoppingCartContainer").style.visibility = "visible";
+                else if(getAge(birthDateString) >= item.minimumAge) {
+                    alert("Customer is older than "+item.minimumAge+". Age: " + getAge(birthDateString));
+                    /*addToShoppingCart(beer);
+					document.getElementById("shoppingCartContainer").style.visibility = "visible";*/
+					return true;
                 } 
                 else {
-                    alert("Customer is younger than 21. Age: " + getAge(birthDateString));
+                    alert("Customer is younger than "+item.minimumAge+". Age: " + getAge(birthDateString));
+					return false;
                 }
             }
 			
@@ -159,6 +162,7 @@
 				"displayName": "El Grande Burrito",
 				"price": 4.99,
 				"amount": 1,
+				"minimumAge": -1,
 			};
 			
 			var taco = {
@@ -166,6 +170,7 @@
 				"displayName": "Big Spicy Taco",
 				"price": 6.99,
 				"amount": 1,
+				"minimumAge": -1,
 			};
 			
 			var nacho = {
@@ -173,6 +178,7 @@
 				"displayName": "Drippy Cheesy Nachos",
 				"price": 5.99,
 				"amount": 1,
+				"minimumAge": -1,
 			};
 			
             var beer = {
@@ -180,6 +186,7 @@
 				"displayName": "Coors Lite",
 				"price": 3.00,
 				"amount": 1,
+				"minimumAge": 21,
 			};
             
 			document.getElementById("sticky1").onclick = function() {
@@ -198,9 +205,11 @@
 			}
             
             document.getElementById("sticky4").onclick = function() {
-                askAge();
-                //addToShoppingCart(beer)
-				//document.getElementById("shoppingCartContainer").style.visibility = "visible";
+                var good = askAge(beer);
+				if(good == true) {
+					addToShoppingCart(beer)
+					document.getElementById("shoppingCartContainer").style.visibility = "visible";
+				}
 			}
 		
 			document.getElementById("shoppingCartButton").onclick = function() {
