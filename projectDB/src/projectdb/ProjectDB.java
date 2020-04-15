@@ -23,7 +23,9 @@ import java.time.LocalDate;
 
 public class ProjectDB {
     public static void main(String[] args) {
-        
+        long phone = 1234;
+        rewardsEnroll(phone);
+        double points = getBalance(phone);
     }
     private static merchant loadedMerchant;
     private static int currentMerchant;
@@ -75,13 +77,18 @@ public class ProjectDB {
     public static void saveTransaction(){
         ArrayList<transaction> temp = readFile("transaction.pdb");
         int index = -1;
-        for(int i = 0; i < temp.size();i++){
-            if(currentTransaction == temp.get(i).getTransID()){
-                index = i;
-            }
+        if(temp == null){
+            temp = new ArrayList<>(1);
         }
-        if(index > 0){
-            temp.remove(index);
+        else{
+            for(int i = 0; i < temp.size();i++){
+                if(currentTransaction == temp.get(i).getTransID()){
+                    index = i;
+                }
+            }
+            if(index > 0){
+                temp.remove(index);
+            }
         }
         temp.add(loadedTransaction);
         saveFile(temp, "transaction.pdb");
@@ -102,7 +109,7 @@ public class ProjectDB {
         saveTransaction();
     }
     
-    public boolean isVoided(int transactionID){
+    public static boolean isVoided(int transactionID){
         if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
@@ -276,8 +283,10 @@ public class ProjectDB {
     public static void saveRewards(){
         ArrayList<rewards> temp = readFile("rewards.pdb");
         int index = -1;
-        if(temp != null){
-            System.out.println(temp.size());
+        if(temp == null){
+            temp = new ArrayList<>(1);
+        }
+        else{
             for(int i = 0; i < temp.size(); i++){
                 if(currentRewards == temp.get(i).getPhone()){
                     index = i;
@@ -291,7 +300,7 @@ public class ProjectDB {
         saveFile(temp, "rewards.pdb");
     }
     
-    public void addTransaction(long phone, int transactionID){
+    public static void addTransaction(long phone, int transactionID){
         if(phone != currentRewards){
             loadRewards(phone);
         }
@@ -299,28 +308,28 @@ public class ProjectDB {
         saveRewards();
     }
     
-    public double getBalance(long phone){
+    public static double getBalance(long phone){
         if(phone != currentRewards){
             loadRewards(phone);
         }
         return loadedRewards.getBalance();
     }
 
-    public String getCustName(long phone){
+    public static String getCustName(long phone){
         if(phone != currentRewards){
             loadRewards(phone);
         }
         return loadedRewards.getCustName();
     }
     
-    public ArrayList<Integer> getTransactionHistory(long phone){
+    public static ArrayList<Integer> getTransactionHistory(long phone){
         if(phone != currentRewards){
             loadRewards(phone);
         }
         return loadedRewards.getTransactionHistory();
     }
     
-    public void removeTransaction(long phone, int transactionID){
+    public static void removeTransaction(long phone, int transactionID){
         if(phone != currentRewards){
             loadRewards(phone);
         }
@@ -328,7 +337,7 @@ public class ProjectDB {
         saveRewards();
     }
     
-    public void resetRewards(long phone){
+    public static void resetRewards(long phone){
         if(phone != currentRewards){
             loadRewards(phone);
         }
@@ -336,7 +345,7 @@ public class ProjectDB {
         saveRewards();
     }
     
-    public void setRewardsBalance(long phone, double balance){
+    public static void setRewardsBalance(long phone, double balance){
         if(phone != currentRewards){
             loadRewards(phone);
         }
@@ -344,7 +353,7 @@ public class ProjectDB {
         saveRewards();
     }
     
-    public void setCustName(long phone, String name){
+    public static void setCustName(long phone, String name){
         if(phone != currentRewards){
             loadRewards(phone);
         }
@@ -382,7 +391,10 @@ public class ProjectDB {
     public static void saveProduct(){
         ArrayList<product> temp = readFile("product.pdb");
         int index = -1;
-        if(temp != null){
+        if(temp == null){
+            temp = new ArrayList<>(1);
+        }
+        else{
             for(int i = 0; i < temp.size(); i++){
                 if(currentProduct == temp.get(i).getProductID()){
                     index = i;
@@ -551,7 +563,10 @@ public class ProjectDB {
     public static void saveMerchant(){
         ArrayList<merchant> temp = readFile("merchant.pdb");
         int index = -1;
-        if(temp != null){
+        if(temp == null){
+            temp = new ArrayList<>(1);
+        }
+        else{
             for(int i = 0; i < temp.size(); i++){
                 if(currentMerchant == temp.get(i).getMerchantID()){
                     index = i;
@@ -624,11 +639,11 @@ public class ProjectDB {
 //        return temp.stream().anyMatch((s) -> (profileName.equals(s.getProfileName())));
 //    }
 //    
-    public boolean settingsExists(ArrayList<settings> temp, String profileName){
+    public static boolean settingsExists(ArrayList<settings> temp, String profileName){
         return temp.stream().anyMatch((s) -> (profileName.equals(s.getProfileName())));
     }
     
-    public void createSettings(String profileName){
+    public static void createSettings(String profileName){
         ArrayList<settings> temp = readFile("settings.pdb");
         if(settingsExists(temp, profileName)){
             loadSettings(profileName);
@@ -640,7 +655,7 @@ public class ProjectDB {
         currentSettings = profileName;
     }
     
-    public void loadSettings(String profileName){
+    public static void loadSettings(String profileName){
         ArrayList<settings> temp = readFile("settings.pdb");
         temp.stream().filter((s) -> (profileName.equals(s.getProfileName()))).forEachOrdered((s) -> {
             loadedSettings = s;
@@ -648,22 +663,27 @@ public class ProjectDB {
         currentSettings = profileName;
     }
     
-    public void saveSettings(){
+    public static void saveSettings(){
         ArrayList<settings> temp = readFile("settings.pdb");
         int index = -1;
-        for(int i = 0; i < temp.size();i++){
-            if(currentSettings.equals(temp.get(i).getProfileName())){
-                index = i;
-            }
+        if(temp == null){
+            temp = new ArrayList<>(1);
         }
-        if(index > 0){
-            temp.remove(index);
+        else{
+                for(int i = 0; i < temp.size();i++){
+                        if(currentSettings.equals(temp.get(i).getProfileName())){
+                                index = i;
+                        }
+                }
+                if(index > 0){
+                        temp.remove(index);
+                }
         }
         temp.add(loadedSettings);
         saveFile(temp, "settings.pdb");
     }
 
-    public void setPointsPerDollar(String profileName, double PointsPerDollar){
+    public static void setPointsPerDollar(String profileName, double PointsPerDollar){
         if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
@@ -671,14 +691,14 @@ public class ProjectDB {
         saveSettings();
     }
     
-    public double getPointsPerDollar(String profileName){
+    public static double getPointsPerDollar(String profileName){
         if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
         return loadedSettings.getPointsPerDollar();
     }
     
-    public void setDollarsPerPoint(String profileName, double dollarsPerPoint){
+    public static void setDollarsPerPoint(String profileName, double dollarsPerPoint){
         if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
@@ -686,7 +706,7 @@ public class ProjectDB {
             saveSettings();
     }
     
-    public double getDollarsPerPoint(String profileName){
+    public static double getDollarsPerPoint(String profileName){
         if(!currentSettings.equals(profileName)){
             loadSettings(profileName);
         }
