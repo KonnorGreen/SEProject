@@ -12,7 +12,7 @@
 		<button id="sticky3">Nachos</button>
 		<button id="sticky4">Beer</button>
 		<br>
-		<button>Sticky Item</button>
+		<button id="sticky5">El Dorado</button>
 		<button>Sticky Item</button>
 		<button>Sticky Item</button>
 		<button>Sticky Item</button>
@@ -31,20 +31,19 @@
 		
 		<script>
 			var shoppingCart = [];
+			var discountCart = []
 			var shoppingCartUID = Math.floor(Math.random() * 100000000);
 			var customerAge = null;
             
             // https://stackoverflow.com/questions/9153445/how-to-communicate-between-iframe-and-the-parent-site
 			function sendDataToIFrame(frameID,sentDataType,sentData) {
-				/*var event = new CustomEvent("welborn_pushDataToFrame",{ data: sentData });
-				var iframe = document.getElementById(frameID);
-				iframe.contentWindow.dispatchEvent(event);*/
 				var iframe = document.getElementById(frameID);
 				iframe.contentWindow.postMessage({ dataType: sentDataType, data: sentData },"*");
 			}
 		
 			function pushShoppingCartData() {
 				sendDataToIFrame("shoppingCartIFrame","shoppingCartUpdate",shoppingCart);
+				sendDataToIFrame("shoppingCartIFrame","discountCartUpdate",discountCart);
 			}
 			
 			function addToShoppingCart(item) {
@@ -76,7 +75,23 @@
 					}
 				}
 			}
-            
+			
+			function addToDiscountCart(item) {
+				clonedItem = {
+					"discountName": item.discountName,
+					"discountPercentage": item.discountPercentage,
+				}
+				discountCart.push(clonedItem);
+				pushShoppingCartData();
+			}
+			
+			function removeFromDiscountCart(discount) {
+				for( [k, v] of Object.entries(discountCart) ) {
+					if (v.discountName == discountName.Name) {
+						discountCart.splice(k,1);
+					}
+				}
+			}
             
             function getAge(birthDateString) {
                 var today = new Date();
@@ -88,22 +103,27 @@
                 }
                 return age;
             }
-
     
             function askAge(item) {
-                birthDateString= prompt("Enter Age in MM/DD/YYYY Format: ");
-                if (birthDateString == null)
-                    return;
-                else if(getAge(birthDateString) >= item.minimumAge) {
-                    alert("Customer is older than "+item.minimumAge+". Age: " + getAge(birthDateString));
-                    /*addToShoppingCart(beer);
-					document.getElementById("shoppingCartContainer").style.visibility = "visible";*/
-					return true;
-                } 
-                else {
-                    alert("Customer is younger than "+item.minimumAge+". Age: " + getAge(birthDateString));
+                birthDateString = prompt("Enter Age in MM/DD/YYYY Format: ");
+				
+				if(birthDateString == null) { return false; }
+				
+				// Verify that the birthdate string was entered correctly before proceeding
+				if(getAge(birthDateString)) {
+					if(getAge(birthDateString) >= item.minimumAge) {
+						alert("Customer is older than "+item.minimumAge+". Age: " + getAge(birthDateString));
+						/*addToShoppingCart(beer);
+						document.getElementById("shoppingCartContainer").style.visibility = "visible";*/
+						return true;
+					} else {
+						alert("Customer is younger than "+item.minimumAge+". Age: " + getAge(birthDateString));
+						return false;
+					}
+				} else {
+					alert("Birthday was entered incorrectly. Please try again using the MM/DD/YYYY format!")
 					return false;
-                }
+				}
             }
 			
 			window.addEventListener("message",function(e) {
@@ -150,6 +170,8 @@
 					pushShoppingCartData();
 					document.getElementById("shoppingCartContainer").style.visibility = "hidden";
 					shoppingCartUID = Math.floor(Math.random() * 100000000);
+				} else if(e.data.dataType == "applyDiscount") {
+					addToDiscountCart(e.data.data)
 				}
 			})
 			
@@ -183,34 +205,48 @@
 			
             var beer = {
 				"UID": 4,
-				"displayName": "Coors Lite",
-				"price": 3.00,
+				"displayName": "Coors Lite (21+)",
+				"price": 3.49,
 				"amount": 1,
 				"minimumAge": 21,
 			};
+			
+			var eldorado = {
+				"UID": 5,
+				"displayName": "El Dorado Super Hot Burrito (18+, not liable for damage to tongue)",
+				"price": 12.99,
+				"amount": 1,
+				"minimumAge": 18,
+			};
             
-			document.getElementById("sticky1").onclick = function() {
-				addToShoppingCart(burrito)
-				document.getElementById("shoppingCartContainer").style.visibility = "visible";
+			// A helper function to determine if the current customer is allowed to buy the requested item
+			function checkCustomerEligibility(item) {
+				// If the item has a minimum age to purchase, then check against the customer's age
+				if(item.minimumAge && item.minimumAge > 0) {
+					var good = askAge(item);
+					if(good == false) { return false; }
+				}
+				
+				// We passed all of the possible checks!
+				return true;
 			}
 			
-			document.getElementById("sticky2").onclick = function() {
-				addToShoppingCart(taco)
-				document.getElementById("shoppingCartContainer").style.visibility = "visible";
-			}
-			
-			document.getElementById("sticky3").onclick = function() {
-				addToShoppingCart(nacho)
-				document.getElementById("shoppingCartContainer").style.visibility = "visible";
-			}
-            
-            document.getElementById("sticky4").onclick = function() {
-                var good = askAge(beer);
-				if(good == true) {
-					addToShoppingCart(beer)
+			function addToShoppingCartButton(item) {
+				if(checkCustomerEligibility(item)) { 
+					addToShoppingCart(item);
 					document.getElementById("shoppingCartContainer").style.visibility = "visible";
 				}
 			}
+			
+			document.getElementById("sticky1").onclick = function() { addToShoppingCartButton(burrito); }
+			
+			document.getElementById("sticky2").onclick = function() { addToShoppingCartButton(taco); }
+			
+			document.getElementById("sticky3").onclick = function() { addToShoppingCartButton(nacho); }
+            
+            document.getElementById("sticky4").onclick = function() { addToShoppingCartButton(beer); }
+			
+			document.getElementById("sticky5").onclick = function() { addToShoppingCartButton(eldorado); }
 		
 			document.getElementById("shoppingCartButton").onclick = function() {
 				var panel = document.getElementById("shoppingCartContainer")

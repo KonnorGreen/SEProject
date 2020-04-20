@@ -1,0 +1,17 @@
+
+projectDB/build/classes/.netbeans_automatic_build
+projectDB/build/classes/.netbeans_update_resources
+projectDB/build/classes/projectdb/merchant.class
+projectDB/build/classes/projectdb/product.class
+projectDB/build/classes/projectdb/ProjectDB.class
+projectDB/build/classes/projectdb/rewards.class
+projectDB/build/classes/projectdb/settings.class
+projectDB/build/classes/projectdb/transaction$transItem.class
+projectDB/build/classes/projectdb/transaction.class
+projectDB/build/classes/projectdb/transItem.class
+projectDB/nbproject/build-impl.xml
+projectDB/nbproject/genfiles.properties
+projectDB/nbproject/private/private.properties
+projectDB/nbproject/private/private.xml
+projectDB/nbproject/project.properties
+*.class

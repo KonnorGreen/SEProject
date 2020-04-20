@@ -8,12 +8,29 @@
 			<tr>
 				<th>Product Name</th>
 				<th>Product Quantity</th>
-				<th>Price</th>
+				<th class="rightHandTableEntry">Price</th>
 			</tr>
 			<tr>
 				<th></th>
 				<th></th>
-				<th id="subTotal">Subtotal</th>
+				<th class="rightHandTableEntry" id="subTotal">Subtotal</th>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
+		<table id="discountCartTable" style="width:50%">
+			<tr>
+				<th>Discount Name</th>
+				<th>Discount Percentage</th>
+				<th class="rightHandTableEntry">Price</th>
+			</tr>
+			<tr>
+				<th></th>
+				<th></th>
+				<th class="rightHandTableEntry" id="fullTotal">Total</th>
 			</tr>
 			<tr>
 				<td></td>
@@ -26,6 +43,7 @@
 		<button id="payByCashButton">Cash</button>
 		<button id="void">Void</button>
 		<button id="customerLogInButton">Log In Customer Account</button>
+		<button id="applyDiscountButton">Apply Discount</button>
 		
 		</br>
 		
@@ -72,7 +90,22 @@
 			</form>
 		</div>
 		
+		<div id="applyDiscountForm" class="collapsableForm">
+			<form>
+				<label for="discountName">The name of the discount</label>
+				<br>
+				<input type="text" id="discountName" value="Merchant Discount" min="1" step="1" max="100">
+				<br>
+				<label for="discountPercentage">The percentage of the discount applied to the shopping cart</label>
+				<br>
+				<input type="number" id="discountPercentage" min="1" step="1" max="100">
+			
+				<input type="submit" value="Confirm Discount" onclick="confirmDiscount();">
+			</form>
+		</div>
+		
 		<script>
+			var subTotalDue = 9.98;
 			var totalDue = 9.98;
 			var customerToken = null;
 			var wasMerchantNotifiedToLogInCustomer = false;
@@ -87,6 +120,11 @@
 				var table = document.getElementById("shoppingCartTable");
 				while(table.rows.length > 3) {
 					table.deleteRow(1);
+				}
+				
+				var table2 = document.getElementById("discountCartTable");
+				while(table2.rows.length > 3) {
+					table2.deleteRow(1);
 				}
 			}
 		
@@ -122,11 +160,32 @@
 				}
 				
 				productPrice.innerHTML = itemData.price;
+				productPrice.className = "rightHandTableEntry"
+			}
+			
+			function insertDiscountCartItem(itemData) {
+				var table = document.getElementById("discountCartTable");
+				var row = table.insertRow(1);
+				var discountNameLabel = row.insertCell(0);
+				var discountPercentageLabel = row.insertCell(1);
+				var discountPriceLabel = row.insertCell(2);
+				
+				discountNameLabel.innerHTML = itemData.discountName;
+				
+				discountPercentageLabel.innerHTML = itemData.discountPercentage + "%";
+				
+				// This calculates the price difference that the discount will remove, and rounds it to the nearest penny
+				var priceDifference = (Math.round((subTotalDue * (itemData.discountPercentage / 100)) * 100))/100;
+				discountPriceLabel.innerHTML = -priceDifference;
+				discountPriceLabel.className = "rightHandTableEntry";
+				
+				totalDue = totalDue - priceDifference;
 			}
 		
 			window.addEventListener("message",function(e) {
 				if (e.data.dataType == "shoppingCartUpdate") {
 					totalDue = 0;
+					subTotalDue = 0;
 					resetShoppingCartDisplay();
 					
 					for( [k, v] of Object.entries(e.data.data) ) {
@@ -136,16 +195,32 @@
 						insertShoppingCartItem(v);
 						
 						// Update the subtotal
-						totalDue = totalDue + (v.price * v.amount);
+						subTotalDue = subTotalDue + (v.price * v.amount);
 					}
 					
 					// Update the subtotal label
-					var dollars = totalDue;
+					var dollars = subTotalDue;
 					var cents = dollars * 100;
 					var formattedDue = Math.round(cents)/100;
 					
 					subTotalLabel = document.getElementById("subTotal")
 					subTotalLabel.innerHTML = formattedDue;
+					
+					totalDue = subTotalDue;
+					
+					totalDueLabel = document.getElementById("fullTotal");
+					totalDueLabel.innerHTML = formattedDue;
+				} else if (e.data.dataType == "discountCartUpdate") {
+					for( [k, v] of Object.entries(e.data.data) ) {
+						console.log(k, v);
+						
+						insertDiscountCartItem(v);
+					}
+					
+					if(totalDue < 0) { totalDue = 0; }
+					
+					totalDueLabel = document.getElementById("fullTotal");
+					totalDueLabel.innerHTML = (Math.round(totalDue*100))/100;
 				}
 			}, false);
 		
@@ -153,6 +228,7 @@
 				document.getElementById("customerVerificationForm").style.display = "none";
 				document.getElementById("cashSubmissionForm").style.display = "none";
 				document.getElementById("cardSubmissionForm").style.display = "none";
+				document.getElementById("applyDiscountForm").style.display = "none";
 			}
 			
 			function resetShoppingCartComplete() {
@@ -164,6 +240,12 @@
 			function confirmTransaction(transactionType) {
 				resetShoppingCartComplete();
 				sendDataToParent("finalizeTransaction",{"transactionType": transactionType, "phoneNumber": rewardPhoneNumber});
+			}
+			
+			function confirmDiscount() {
+				var discountName = document.getElementById("discountName").value;
+				var discountPercentage = document.getElementById("discountPercentage").value;
+				sendDataToParent("applyDiscount",{"discountName": discountName, "discountPercentage": discountPercentage});
 			}
 			
 			hideAllForms();
@@ -202,6 +284,11 @@
 				checkIfCustomerLoggedIn();
 				hideAllForms()
 				toggleElementVisibility("cardSubmissionForm")
+			}
+			
+			document.getElementById("applyDiscountButton").onclick = function() {
+				hideAllForms()
+				toggleElementVisibility("applyDiscountForm")
 			}
 			
 			document.getElementById("void").onclick = function() {
