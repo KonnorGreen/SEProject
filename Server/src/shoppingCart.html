@@ -172,7 +172,13 @@
 				
 				discountNameLabel.innerHTML = itemData.discountName;
 				
-				discountPercentageLabel.innerHTML = itemData.discountPercentage + "%";
+				discountPercentageLabel.innerHTML = '<button id="cancelButton">X</button>'+itemData.discountPercentage+'%';
+				discountPercentageLabel.childNodes[0].childNodes[0].onclick = function() { 
+					var result = window.confirm("Are you sure you want to remove "+itemData.discountName+" from the applied discounts?");
+					if (result) {
+						sendDataToParent("removeDiscount",{"discount": itemData})
+					}
+				};
 				
 				// This calculates the price difference that the discount will remove, and rounds it to the nearest penny
 				var priceDifference = (Math.round((subTotalDue * (itemData.discountPercentage / 100)) * 100))/100;

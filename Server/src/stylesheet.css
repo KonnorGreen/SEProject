@@ -45,3 +45,13 @@ td {
 div {
 	
 }
+
+.discountPercentageLabel {
+	border: 1px red solid;
+}
+
+.discountPercentageWrapper {
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	border: 1px blue solid;
+}

@@ -87,8 +87,9 @@
 			
 			function removeFromDiscountCart(discount) {
 				for( [k, v] of Object.entries(discountCart) ) {
-					if (v.discountName == discountName.Name) {
+					if (v.discountName == discount.discountName && v.discountPercentage == discount.discountPercentage) {
 						discountCart.splice(k,1);
+						return;
 					}
 				}
 			}
@@ -143,6 +144,10 @@
 							return;
 						}
 					}
+				} else if(e.data.dataType == "removeDiscount") {
+					var item = e.data.data.discount;
+					removeFromDiscountCart(item);
+					pushShoppingCartData();
 				} else if(e.data.dataType == "eraseShoppingCart") {
 					for( [k, v] of Object.entries(shoppingCart) ) {
 						removeFromShoppingCart(v.UID);
