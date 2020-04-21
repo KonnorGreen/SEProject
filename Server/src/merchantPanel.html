@@ -29,6 +29,9 @@
 			<iframe class="resized" id="shoppingCartIFrame" src="shoppingCart.html"></iframe>
 		</div>
 		
+		<p id="customerAgeLabel">Customer's age is unknown</p>
+		<button id="resetCustomerAge">Reset Customer's Age</button>
+		
 		<script>
 			var shoppingCart = [];
 			var discountCart = []
@@ -63,6 +66,7 @@
 					"displayName": item.displayName,
 					"price": item.price,
 					"amount": item.amount,
+					"minimumAge": item.minimumAge,
 				}
 				shoppingCart.push(clonedItem);
 				pushShoppingCartData();
@@ -105,27 +109,39 @@
                 return age;
             }
     
-            function askAge(item) {
-                birthDateString = prompt("Enter Age in MM/DD/YYYY Format: ");
+            function askAge() {
+                birthDateString = prompt("Please enter date of birth in MM/DD/YYYY format: ");
 				
 				if(birthDateString == null) { return false; }
 				
 				// Verify that the birthdate string was entered correctly before proceeding
 				if(getAge(birthDateString)) {
-					if(getAge(birthDateString) >= item.minimumAge) {
-						alert("Customer is older than "+item.minimumAge+". Age: " + getAge(birthDateString));
-						/*addToShoppingCart(beer);
-						document.getElementById("shoppingCartContainer").style.visibility = "visible";*/
-						return true;
-					} else {
-						alert("Customer is younger than "+item.minimumAge+". Age: " + getAge(birthDateString));
-						return false;
-					}
+					customerAge = getAge(birthDateString);
+					document.getElementById("customerAgeLabel").innerHTML = "Customer is " + customerAge + " years old";
+					return true;
 				} else {
-					alert("Birthday was entered incorrectly. Please try again using the MM/DD/YYYY format!")
+					alert("Birth date was entered incorrectly. Please try again using the MM/DD/YYYY format!")
 					return false;
 				}
             }
+			
+			function compareMinimumAgeToCustomer(item,silenceAlerts) {
+				if(customerAge == null) {
+					askAge();
+				}
+				if(customerAge == null) {
+					// If customer age is still null, then they must not have entered it correctly in askAge()
+					return false;
+				} else {
+					if(customerAge >= item.minimumAge) {
+						if(!silenceAlerts) { alert("Customer is older than "+item.minimumAge+". Age: " + customerAge); }
+						return true;
+					} else {
+						if(!silenceAlerts) { alert("Customer is younger than "+item.minimumAge+". Age: " + customerAge); }
+						return false;
+					}
+				}
+			}
 			
 			window.addEventListener("message",function(e) {
 				if (e.data.dataType == "productSpinnerUpdate") {
@@ -153,7 +169,7 @@
 						removeFromShoppingCart(v.UID);
 					}
 					pushShoppingCartData();
-					document.getElementById("shoppingCartContainer").style.visibility = "hidden";
+					document.getElementById("shoppingCartContainer").style.display = "none";
 				} else if(e.data.dataType == "finalizeTransaction") {
 					// Report to server
 					editedShoppingCart = {};
@@ -173,7 +189,7 @@
 						removeFromShoppingCart(v.UID);
 					}
 					pushShoppingCartData();
-					document.getElementById("shoppingCartContainer").style.visibility = "hidden";
+					document.getElementById("shoppingCartContainer").style.display = "none";
 					shoppingCartUID = Math.floor(Math.random() * 100000000);
 				} else if(e.data.dataType == "applyDiscount") {
 					addToDiscountCart(e.data.data)
@@ -228,7 +244,7 @@
 			function checkCustomerEligibility(item) {
 				// If the item has a minimum age to purchase, then check against the customer's age
 				if(item.minimumAge && item.minimumAge > 0) {
-					var good = askAge(item);
+					var good = compareMinimumAgeToCustomer(item,customerAge);
 					if(good == false) { return false; }
 				}
 				
@@ -239,7 +255,32 @@
 			function addToShoppingCartButton(item) {
 				if(checkCustomerEligibility(item)) { 
 					addToShoppingCart(item);
-					document.getElementById("shoppingCartContainer").style.visibility = "visible";
+					document.getElementById("shoppingCartContainer").style.display = "";
+				}
+			}
+			
+			document.getElementById("resetCustomerAge").onclick = function() {
+				var previousAge = customerAge;
+				askAge();
+				
+				console.log(previousAge);
+				console.log(customerAge);
+				
+				// If we have a younger age for the customer, then go through the shopping cart and remove any items that are no longer legal to purchase
+				if(customerAge < previousAge) {
+					var itemsRemoved = 0
+					for( [k, v] of Object.entries(shoppingCart) ) {
+						var good = checkCustomerEligibility(v);
+						if(!good) {
+							removeFromShoppingCart(v.UID);
+							itemsRemoved++;
+						}
+					}
+					
+					if(itemsRemoved > 0) {
+						pushShoppingCartData();
+						alert(itemsRemoved + " items were removed from the shopping cart due to the change in the customer's age.");
+					}
 				}
 			}
 			
@@ -252,13 +293,15 @@
             document.getElementById("sticky4").onclick = function() { addToShoppingCartButton(beer); }
 			
 			document.getElementById("sticky5").onclick = function() { addToShoppingCartButton(eldorado); }
-		
+			
 			document.getElementById("shoppingCartButton").onclick = function() {
 				var panel = document.getElementById("shoppingCartContainer")
-				if (panel.style.visibility == "visible") {
-					panel.style.visibility = "hidden"
+				if (panel.style.display == "none") {
+					panel.style.display = ""
+					return true;
 				} else {
-					panel.style.visibility = "visible"
+					panel.style.display = "none"
+					return false;
 				}
 			}
 		</script>
