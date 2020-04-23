@@ -78,6 +78,7 @@ public class ProjectDB {
         ArrayList<transaction> temp = readFile("transaction.pdb");
         temp.stream().filter((t) -> (transactionID == t.getTransID())).forEachOrdered((t) -> {
             loadedTransaction = t;
+            loadedItemList = t.getItemList();
         });
         currentTransaction = transactionID;
     }
@@ -217,6 +218,32 @@ public class ProjectDB {
             }
         }
         return output;
+    }
+    
+    public static void addItem(int transactionID, int productID, int quant){
+        int itemID;
+        if(currentTransaction != transactionID){
+            loadTransaction(transactionID);
+        }
+        
+        itemID = -1;
+        for (transItem i : loadedItemList){
+            if(i.getTransItemID() > itemID){
+                itemID = i.getTransItemID();
+            }
+        }
+        itemID++;
+        loadedTransaction.addItem(itemID, productID, quant);
+        saveTransaction();
+    }
+    
+    public static void removeItem(int transactionID, int itemID){
+        if(currentTransaction != transactionID){
+            loadTransaction(transactionID);
+        }
+        loadedTransaction.removeItem(itemID);
+        saveTransaction();
+        loadedItemList = loadedTransaction.getItemList();
     }
     
     public static String manyDayTransactionReport(String startDate, String endDate){//date format "yyyy-MM-dd", example "2019-03-29"
@@ -741,6 +768,7 @@ public class ProjectDB {
             }
             catch(IOException e){
                 System.out.println("An error occurred in readFile() try block 1.");
+                System.out.println(e);
             }
         }
         if(myfile.length() > 0){
