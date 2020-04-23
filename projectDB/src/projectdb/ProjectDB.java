@@ -32,8 +32,12 @@ public class ProjectDB {
 //        setRewardsBalance(phone,14.3);
 //        points = getBalance(phone);
 //        System.out.println(points);
-        int id = createTransaction();
-        createSettings("admin");
+//        int id = createTransaction();
+//        int prod = createProduct();
+//        int item = addItem(id, prod, 3);
+//        System.out.println(getPrice(item));
+//        createSettings("admin");
+        
         
     }
     private static merchant loadedMerchant;
@@ -224,21 +228,24 @@ public class ProjectDB {
         return output;
     }
     
-    public static void addItem(int transactionID, int productID, int quant){
+    public static int addItem(int transactionID, int productID, int quant){
         int itemID;
         if(currentTransaction != transactionID){
             loadTransaction(transactionID);
         }
         
         itemID = -1;
-        for (transItem i : loadedItemList){
-            if(i.getTransItemID() > itemID){
-                itemID = i.getTransItemID();
+        if(loadedItemList != null){
+            for (transItem i : loadedItemList){
+                if(i.getTransItemID() > itemID){
+                    itemID = i.getTransItemID();
+                }
             }
         }
         itemID++;
         loadedTransaction.addItem(itemID, productID, quant);
         saveTransaction();
+        return itemID;
     }
     
     public static void removeItem(int transactionID, int itemID){

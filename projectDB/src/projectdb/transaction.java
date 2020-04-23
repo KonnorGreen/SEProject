@@ -87,6 +87,9 @@ public class transaction implements Serializable{
     }
     
     public void addItem(int transItemID, int productID, int quant){
+        if(itemList == null){
+            itemList = new ArrayList<>(1);
+        }
         itemList.add(new transItem(transItemID, productID, quant));
     }
     
