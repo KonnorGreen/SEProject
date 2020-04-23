@@ -16,7 +16,7 @@
 		
 		</br>
 		
-		<div id="rewardsFrame" class="collapsableForm" style="visibility: hidden">
+		<div id="rewardsFrame" class="collapsableForm" style="display: none">
 			<form>
 				<label for="pointsPerDollarSpent">Reward points earned per dollar spent</label>
 				<br>
@@ -65,10 +65,10 @@
 			
 			document.getElementById("manageRewardsButton").onclick = function() {
 				var panel = document.getElementById("rewardsFrame")
-				if (panel.style.visibility == "visible") {
-					panel.style.visibility = "hidden"
+				if (panel.style.display == "none") {
+					panel.style.display = ""
 				} else {
-					panel.style.visibility = "visible"
+					panel.style.display = "none"
 				}
 			}
 			

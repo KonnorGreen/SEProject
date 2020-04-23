@@ -17,13 +17,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import projectdb.ProjectDB;
+import static projectdb.ProjectDB.addItem;
+import static projectdb.ProjectDB.createProduct;
+import static projectdb.ProjectDB.createSettings;
+import static projectdb.ProjectDB.createTransaction;
+import static projectdb.ProjectDB.dailyTransactionReport;
+import static projectdb.ProjectDB.saveTransaction;
+import static projectdb.ProjectDB.setSubtotal;
+import static projectdb.ProjectDB.setTotal;
 
 public class serv {
-    private static String indexHTML;
-    private static String adminPanelHTML;
-    private static String merchantPanelHTML;
-    private static String shoppingCartHTML;
-    private static String stylesheetCSS;
     private static final Gson gson = new Gson();
     private static ProjectDB database;
     
@@ -41,23 +44,34 @@ public class serv {
         return result;
     }
     
+    static class fileServer implements HttpHandler {
+        private String fileToServe;
+        public fileServer(String file) {
+            fileToServe = file;
+        }
+        public void handle(HttpExchange t) throws IOException {
+            byte[] response = fileToServe.getBytes();
+            
+            t.sendResponseHeaders(200, response.length);
+            OutputStream os = t.getResponseBody();
+            
+            os.write(response);
+            os.close();
+        }
+    }
+    
+    public static void createContextForFileServing(HttpServer server, String fileName) {
+        InputStream in = SoftwareEngineering.class.getResourceAsStream(fileName);
+        String file = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+        server.createContext("/"+fileName, new fileServer(file));
+    }
+    
     public static void main(String[] args) throws Exception {
-        database.createSettings("admin");
+        createSettings("admin");
         
-        InputStream in1 = SoftwareEngineering.class.getResourceAsStream("index.html");
-        indexHTML = new BufferedReader(new InputStreamReader(in1)).lines().collect(Collectors.joining("\n"));
-        
-        InputStream in2 = SoftwareEngineering.class.getResourceAsStream("adminPanel.html");
-        adminPanelHTML = new BufferedReader(new InputStreamReader(in2)).lines().collect(Collectors.joining("\n"));
-        
-        InputStream in3 = SoftwareEngineering.class.getResourceAsStream("merchantPanel.html");
-        merchantPanelHTML = new BufferedReader(new InputStreamReader(in3)).lines().collect(Collectors.joining("\n"));
-        
-        InputStream in4 = SoftwareEngineering.class.getResourceAsStream("shoppingCart.html");
-        shoppingCartHTML = new BufferedReader(new InputStreamReader(in4)).lines().collect(Collectors.joining("\n"));
-        
-        InputStream in5 = SoftwareEngineering.class.getResourceAsStream("stylesheet.css");
-        stylesheetCSS = new BufferedReader(new InputStreamReader(in5)).lines().collect(Collectors.joining("\n"));
+        for(int i=0;i<5;i++) {
+            createProduct();
+        }
         
         HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
         
@@ -68,75 +82,18 @@ public class serv {
         server.createContext("/getrewardpoints", new getRewardPointsHandler());
         server.createContext("/managerewards", new manageRewardsHandler());
         server.createContext("/getsettings", new getSettingsHandler());
+        server.createContext("/getreports", new getReportsHandler());
         
         // Webpage requests
-        server.createContext("/index.html", new indexHandler());
-        server.createContext("/adminPanel.html", new adminHandler());
-        server.createContext("/merchantPanel.html", new merchantHandler());
-        server.createContext("/shoppingCart.html", new shoppingHandler());
-        server.createContext("/stylesheet.css", new styleHandler());
+        createContextForFileServing(server, "index.html");
+        createContextForFileServing(server, "adminPanel.html");
+        createContextForFileServing(server, "merchantPanel.html");
+        createContextForFileServing(server, "shoppingCart.html");
+        createContextForFileServing(server, "stylesheet.css");
+        createContextForFileServing(server, "reports.html");
+        
         server.setExecutor(null); // creates a default executor
         server.start();
-    }
-
-    static class indexHandler implements HttpHandler {
-        public void handle(HttpExchange t) throws IOException {
-            byte[] response = indexHTML.getBytes();
-            
-            t.sendResponseHeaders(200, response.length);
-            OutputStream os = t.getResponseBody();
-            
-            os.write(response);
-            os.close();
-        }
-    }
-    
-    static class adminHandler implements HttpHandler {
-        public void handle(HttpExchange t) throws IOException {
-            byte[] response = adminPanelHTML.getBytes();
-            
-            t.sendResponseHeaders(200, response.length);
-            OutputStream os = t.getResponseBody();
-            
-            os.write(response);
-            os.close();
-        }
-    }
-    
-    static class merchantHandler implements HttpHandler {
-        public void handle(HttpExchange t) throws IOException {
-            byte[] response = merchantPanelHTML.getBytes();
-            
-            t.sendResponseHeaders(200, response.length);
-            OutputStream os = t.getResponseBody();
-            
-            os.write(response);
-            os.close();
-        }
-    }
-    
-    static class shoppingHandler implements HttpHandler {
-        public void handle(HttpExchange t) throws IOException {
-            byte[] response = shoppingCartHTML.getBytes();
-            
-            t.sendResponseHeaders(200, response.length);
-            OutputStream os = t.getResponseBody();
-            
-            os.write(response);
-            os.close();
-        }
-    }
-    
-    static class styleHandler implements HttpHandler {
-        public void handle(HttpExchange t) throws IOException {
-            byte[] response = stylesheetCSS.getBytes();
-            
-            t.sendResponseHeaders(200, response.length);
-            OutputStream os = t.getResponseBody();
-            
-            os.write(response);
-            os.close();
-        }
     }
     
     static class pingHandler implements HttpHandler {
@@ -204,32 +161,40 @@ public class serv {
             transactionData data = gson.fromJson(sb.toString(),transactionData.class);
             System.out.println("Shopping cart " + data.shoppingCartUID + " is being processed..");
             
-            BigDecimal subTotal = new BigDecimal("0.00");
-            BigDecimal total = new BigDecimal("0.00");
-            BigDecimal totalDiscountPercentage = new BigDecimal("0.00");
+            try {
+                int transactionID = createTransaction();
             
-            for(shoppingCartData s : data.shoppingCart) {
-                //subTotal = subTotal + (s.amount * s.price);
-                subTotal = subTotal.add(new BigDecimal(s.amount).multiply(new BigDecimal(s.price)));
-                System.out.println(s.displayName);
-            }
-            
-            total = total.add(subTotal);
-            
-            for(discountCartData s : data.discountCart) {
-                //totalDiscountPercentage = totalDiscountPercentage + s.discountPercentage;
-                totalDiscountPercentage = totalDiscountPercentage.add(new BigDecimal(s.discountPercentage));
-                System.out.println(s.discountName);
-            }
-            
-            //total = total - (total * (totalDiscountPercentage/100));
-            BigDecimal discountSavings = total.multiply(totalDiscountPercentage.divide(new BigDecimal(100)));
-            total = total.subtract(discountSavings);
-            total = total.setScale(2, RoundingMode.FLOOR);
-            discountSavings = discountSavings.setScale(2, RoundingMode.CEILING);
-            
-            System.out.println("Shopping cart " + data.shoppingCartUID + " has been processed! Total recieved was $" + total + ", amount saved through discounts was $" + discountSavings);
-            
+                BigDecimal subTotal = new BigDecimal("0.00");
+                BigDecimal total = new BigDecimal("0.00");
+                BigDecimal totalDiscountPercentage = new BigDecimal("0.00");
+
+                for(shoppingCartData s : data.shoppingCart) {
+                    //subTotal = subTotal + (s.amount * s.price);
+                    subTotal = subTotal.add(new BigDecimal(s.amount).multiply(new BigDecimal(s.price)));
+                    addItem(transactionID, s.UID, (int) Math.ceil(s.amount));
+                    System.out.println(s.displayName);
+                }
+
+                total = total.add(subTotal);
+                setSubtotal(transactionID,subTotal.doubleValue());
+
+                for(discountCartData s : data.discountCart) {
+                    //totalDiscountPercentage = totalDiscountPercentage + s.discountPercentage;
+                    totalDiscountPercentage = totalDiscountPercentage.add(new BigDecimal(s.discountPercentage));
+                    System.out.println(s.discountName);
+                }
+
+                //total = total - (total * (totalDiscountPercentage/100));
+                BigDecimal discountSavings = total.multiply(totalDiscountPercentage.divide(new BigDecimal(100)));
+                total = total.subtract(discountSavings);
+                total = total.setScale(2, RoundingMode.FLOOR);
+                discountSavings = discountSavings.setScale(2, RoundingMode.CEILING);
+
+                setTotal(transactionID,total.doubleValue());
+                saveTransaction();
+
+                System.out.println("Shopping cart " + data.shoppingCartUID + " has been processed! Total recieved was $" + total + ", amount saved through discounts was $" + discountSavings);
+            } catch(Exception e) { e.printStackTrace(); }
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
             
@@ -298,6 +263,19 @@ public class serv {
         public void handle(HttpExchange t) throws IOException {         
             byte [] response = gson.toJson(new settingsData()).getBytes();
             
+            t.sendResponseHeaders(200, response.length);
+            OutputStream os = t.getResponseBody();
+            
+            os.write(response);
+            os.close();
+        }
+    }
+    
+    static class getReportsHandler implements HttpHandler {
+        public void handle(HttpExchange t) throws IOException {
+            byte [] response = gson.toJson(new reportsData()).getBytes();
+            System.out.println(gson.toJson(new reportsData()));
+                
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
             

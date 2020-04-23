@@ -24,13 +24,13 @@
             </tr>
             <tr>
                 <td>Total Sales:</td>
-                <td></td>
-                <td></td>
+                <td id="dailySalesCount"></td>
+                <td id="dailySalesAmount"></td>
             </tr>
             <tr>
                 <td>Discounts:</td>
-                <td></td>
-                <td></td>
+                <td id="dailyDiscountCount"></td>
+                <td id="dailyDiscountAmount"></td>
             </tr>
         </table>
     </div>
@@ -46,13 +46,13 @@
             </tr>
             <tr>
                 <td>Total Sales:</td>
-                <td></td>
-                <td></td>
+                <td id="monthlySalesCount"></td>
+                <td id="monthlySalesAmount"></td>
             </tr>
             <tr>
                 <td>Discounts:</td>
-                <td></td>
-                <td></td>
+                <td id="monthlyDiscountCount"></td>
+                <td id="monthlyDiscountAmount"></td>
             </tr>
         </table>
     </div>
@@ -84,6 +84,28 @@
     var n = month[d.getMonth()];
     document.getElementById("month").innerHTML = n + " " + y;
 
+	function loadReports() {
+		const http = new XMLHttpRequest();
+		var url = "/getreports";
+		http.open("GET",url);
+		http.send("");
+		
+		http.onreadystatechange = function() {
+			if(this.readyState == 4 && this.status == 200) {
+				console.log(http.responseText);
+				var data = JSON.parse(http.responseText);
+				document.getElementById("dailySalesCount").innerHTML = data.dailySalesCount;
+				document.getElementById("dailySalesAmount").innerHTML = data.dailySalesAmount;
+				document.getElementById("dailyDiscountCount").innerHTML = data.dailyDiscountCount;
+				document.getElementById("dailyDiscountAmount").innerHTML = data.dailyDiscountAmount;
+				
+				document.getElementById("monthlySalesCount").innerHTML = data.monthlySalesCount;
+				document.getElementById("monthlySalesAmount").innerHTML = data.monthlySalesAmount;
+				document.getElementById("monthlyDiscountCount").innerHTML = data.monthlyDiscountCount;
+				document.getElementById("monthlyDiscountAmount").innerHTML = data.monthlyDiscountAmount;
+			}
+		}
+	}
 
     function createDailyPDF() {
         var doc = new jsPDF()
@@ -111,6 +133,8 @@
             $("#monthlyReport").toggle();
         });
     });
+	
+	loadReports()
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
 <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script></html>
