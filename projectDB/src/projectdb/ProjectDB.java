@@ -32,6 +32,7 @@ public class ProjectDB {
 //        setRewardsBalance(phone,14.3);
 //        points = getBalance(phone);
 //        System.out.println(points);
+        int id = createTransaction();
         createSettings("admin");
         
     }
@@ -63,9 +64,11 @@ public class ProjectDB {
         String filename = "transaction.pdb";
         ArrayList<transaction> mylist = readFile(filename);
         transactionID = -1;
-        for (transaction t : mylist){
-            if(t.getTransID() > transactionID){
-                transactionID = t.getTransID();
+        if(mylist != null){
+            for (transaction t : mylist){
+                if(t.getTransID() > transactionID){
+                    transactionID = t.getTransID();
+                }
             }
         }
         transactionID++;
