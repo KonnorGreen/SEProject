@@ -23,9 +23,17 @@ import java.time.LocalDate;
 
 public class ProjectDB {
     public static void main(String[] args) {
-        long phone = 1234;
-        rewardsEnroll(phone);
-        double points = getBalance(phone);
+//        long phone = 123456789L;
+//        rewardsEnroll(phone);
+//        double points = getBalance(phone);
+//        setRewardsBalance(1234,100.3);
+//        phone = 3588;
+//        rewardsEnroll(phone);
+//        setRewardsBalance(phone,14.3);
+//        points = getBalance(phone);
+//        System.out.println(points);
+        createSettings("admin");
+        
     }
     private static merchant loadedMerchant;
     private static int currentMerchant;
@@ -640,6 +648,9 @@ public class ProjectDB {
 //    }
 //    
     public static boolean settingsExists(ArrayList<settings> temp, String profileName){
+        if (temp == null){
+            return false;
+        }
         return temp.stream().anyMatch((s) -> (profileName.equals(s.getProfileName())));
     }
     
@@ -650,6 +661,7 @@ public class ProjectDB {
         }
         else{
             loadedSettings = new settings(profileName);
+            System.out.println("Profile name: " + loadedSettings.getProfileName());
             saveSettings();
         }
         currentSettings = profileName;
@@ -740,6 +752,7 @@ public class ProjectDB {
         }
         catch(IOException | ClassNotFoundException e){
             System.out.println("An error occurred in readFile() try block 2.");
+            System.out.println(e);
         }}
         return temp;
     }
@@ -752,7 +765,7 @@ public class ProjectDB {
             out.close();
         }
             catch(IOException e){
-                System.out.println("An error occurred.");
+                System.out.println("An error occurred in saveFile.");
             }
     }
     

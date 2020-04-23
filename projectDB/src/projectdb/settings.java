@@ -5,11 +5,13 @@
  */
 package projectdb;
 
+import java.io.Serializable;
+
 /**
  *
  * @author anazo
  */
-public class settings {
+public class settings implements Serializable {
     private double pointsPerDollar;
     private double dollarsPerPoint;
     private String profileName;

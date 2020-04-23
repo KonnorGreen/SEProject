@@ -5,11 +5,13 @@
  */
 package projectdb;
 
+import java.io.Serializable;
+
 /**
  *
  * @author anazo
  */
-public class transItem {
+public class transItem implements Serializable {
         private final int transItemID;
         private final int productID;
         private final String description;
