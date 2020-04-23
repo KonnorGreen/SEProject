@@ -58,7 +58,7 @@ public class ProjectDB {
 //        return loadedTransaction.getTransID() == transID;
 //    }
     
-    public static void createTransaction(){
+    public static int createTransaction(){
         int transactionID;
         String filename = "transaction.pdb";
         ArrayList<transaction> mylist = readFile(filename);
@@ -72,6 +72,7 @@ public class ProjectDB {
         loadedTransaction = new transaction(transactionID);
         saveTransaction();
         currentTransaction = transactionID;
+        return transactionID;
     }
     
     public static void loadTransaction(int transactionID){
@@ -397,7 +398,7 @@ public class ProjectDB {
     }
 
     //products
-    public static void createProduct(){
+    public static int createProduct(){
         int productID;
         String fileName = "product.pdb";
         ArrayList<product> mylist = readFile(fileName);
@@ -413,6 +414,7 @@ public class ProjectDB {
         loadedProduct = new product(productID);
         saveProduct();
         currentProduct = productID;
+        return productID;
     }
     
     public static void loadProduct(int productID){
@@ -569,7 +571,7 @@ public class ProjectDB {
     
 
     //merchants
-    public static void createMerchant(){
+    public static int createMerchant(){
         int merchantID;
         String fileName = "merchant.pdb";
         ArrayList<merchant> mylist = readFile(fileName);
@@ -585,6 +587,7 @@ public class ProjectDB {
         loadedMerchant = new merchant(merchantID);
         saveMerchant();
         currentMerchant = merchantID;
+        return merchantID;
     }
     
     public static void loadMerchant(int merchantID){
