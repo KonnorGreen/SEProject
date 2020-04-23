@@ -1,0 +1,116 @@
+<html>
+<link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen" />
+
+<head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <button id="dailyButton">Daily Report</button>
+    <button id="monthlyButton">Monthly Report</button>
+    <br>
+    <button id="generatePDFButton" onclick="createDailyPDF()">Generate Daily PDF</button>
+    <button id="generatePDFButton" onclick="createMonthlyPDF()">Generate Monthly PDF</button>
+    <div id="dailyReport">
+        <p>Report Date: <span id="date"></span></p>
+        <table id="dailyReportTable" style="width:30%">
+            <caption>Daily Report</caption>
+            <tr>
+                <th>Description</th>
+                <th>Count</th>
+                <th>Amount</th>
+            </tr>
+            <tr>
+                <td>Total Sales:</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Discounts:</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="monthlyReport">
+        <p>Report Month: <span id="month"></span></p>
+        <table id="monthlyReportTable" style="width:50%;">
+            <caption>Monthly Report</caption>
+            <tr>
+                <th>Description</th>
+                <th>Count</th>
+                <th>Amount</th>
+            </tr>
+            <tr>
+                <td>Total Sales:</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Discounts:</td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+
+<script>
+    n = new Date();
+    y = n.getFullYear();
+    m = n.getMonth() + 1;
+    da = n.getDate();
+    document.getElementById("date").innerHTML = m + "/" + da + "/" + y;
+
+
+    var d = new Date();
+    var month = new Array();
+    month[0] = "January";
+    month[1] = "February";
+    month[2] = "March";
+    month[3] = "April";
+    month[4] = "May";
+    month[5] = "June";
+    month[6] = "July";
+    month[7] = "August";
+    month[8] = "September";
+    month[9] = "October";
+    month[10] = "November";
+    month[11] = "December";
+    var n = month[d.getMonth()];
+    document.getElementById("month").innerHTML = n + " " + y;
+
+
+    function createDailyPDF() {
+        var doc = new jsPDF()
+        var day = document.querySelector('#dailyReport')
+        doc.fromHTML(day, 10, 10)
+        doc.save("Daily-Sales-Report.pdf")
+    }
+
+    function createMonthlyPDF() {
+        var doc = new jsPDF()
+        var month = document.querySelector('#monthlyReport')
+        doc.fromHTML(month, 10, 10)
+        doc.save("Monthly-Sales-Report.pdf")
+    }
+
+    $(function() {
+        $("#dailyButton").click(function() {
+            $("#dailyReport").toggle();
+        });
+    });
+
+
+    $(function() {
+        $("#monthlyButton").click(function() {
+            $("#monthlyReport").toggle();
+        });
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script></html>

@@ -8,7 +8,7 @@
 		<p>Hello, admin!</p>
 		<input type="text" placeholder="Search..">
 		</br>
-		<button>Reports</button>
+		<button id="reportsButton">Reports</button>
 		<button id="pingButton">Click me to ping!</button>
 		</br>
 		<button id="manageRewardsButton">Manage Rewards</button>
@@ -32,7 +32,22 @@
 			</form>
 		</div>
 		
+        <div id="reportsContainer" class="resizer">
+			<iframe class="resized" id="reportsIFrame" src="reports.html"></iframe>
+		</div>
+
 		<script>
+            document.getElementById("reportsButton").onclick = function() {
+				var panel = document.getElementById("reportsContainer")
+				if (panel.style.display == "none") {
+					panel.style.display = ""
+					return true;
+				} else {
+					panel.style.display = "none"
+					return false;
+				}
+			}
+            
 			document.getElementById("pingButton").onclick = function() {
 				const http = new XMLHttpRequest();
 				var url = "/ping";
@@ -102,14 +117,7 @@
 			document.getElementById("testButton").onclick = function() {
 				
 			}
-			
-			function createPDF() {
-				var doc = new jsPDF()
-				var h1 = document.querySelector('#divID')
-				doc.fromHTML(h1,10,10)
-				doc.save("output.pdf")
-			}
-			
+					
 			loadRewardSettings();
 		</script>
 	</body>
