@@ -1,7 +1,6 @@
 package softwareengineering;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -12,17 +11,20 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import projectdb.ProjectDB;
 
-public class SoftwareEngineering {
+public class serv {
     private static String indexHTML;
     private static String adminPanelHTML;
     private static String merchantPanelHTML;
     private static String shoppingCartHTML;
     private static String stylesheetCSS;
-    private static Gson gson;
+    private static final Gson gson = new Gson();
     private static ProjectDB database;
     
     // https://stackoverflow.com/questions/11640025/how-to-obtain-the-query-string-in-a-get-with-java-httpserver-httpexchange
@@ -40,6 +42,8 @@ public class SoftwareEngineering {
     }
     
     public static void main(String[] args) throws Exception {
+        database.createSettings("admin");
+        
         InputStream in1 = SoftwareEngineering.class.getResourceAsStream("index.html");
         indexHTML = new BufferedReader(new InputStreamReader(in1)).lines().collect(Collectors.joining("\n"));
         
@@ -62,6 +66,8 @@ public class SoftwareEngineering {
         server.createContext("/sendsms", new SMSHandler());
         server.createContext("/finalizetransaction", new finalizeTransactionHandler());
         server.createContext("/getrewardpoints", new getRewardPointsHandler());
+        server.createContext("/managerewards", new manageRewardsHandler());
+        server.createContext("/getsettings", new getSettingsHandler());
         
         // Webpage requests
         server.createContext("/index.html", new indexHandler());
@@ -195,7 +201,34 @@ public class SoftwareEngineering {
             }
             System.out.println("bbb: " + sb.toString());
             
-            //JsonObject shoppingCart = gson.fromJson(sb.toString());
+            transactionData data = gson.fromJson(sb.toString(),transactionData.class);
+            System.out.println("Shopping cart " + data.shoppingCartUID + " is being processed..");
+            
+            BigDecimal subTotal = new BigDecimal("0.00");
+            BigDecimal total = new BigDecimal("0.00");
+            BigDecimal totalDiscountPercentage = new BigDecimal("0.00");
+            
+            for(shoppingCartData s : data.shoppingCart) {
+                //subTotal = subTotal + (s.amount * s.price);
+                subTotal = subTotal.add(new BigDecimal(s.amount).multiply(new BigDecimal(s.price)));
+                System.out.println(s.displayName);
+            }
+            
+            total = total.add(subTotal);
+            
+            for(discountCartData s : data.discountCart) {
+                //totalDiscountPercentage = totalDiscountPercentage + s.discountPercentage;
+                totalDiscountPercentage = totalDiscountPercentage.add(new BigDecimal(s.discountPercentage));
+                System.out.println(s.discountName);
+            }
+            
+            //total = total - (total * (totalDiscountPercentage/100));
+            BigDecimal discountSavings = total.multiply(totalDiscountPercentage.divide(new BigDecimal(100)));
+            total = total.subtract(discountSavings);
+            total = total.setScale(2, RoundingMode.FLOOR);
+            discountSavings = discountSavings.setScale(2, RoundingMode.CEILING);
+            
+            System.out.println("Shopping cart " + data.shoppingCartUID + " has been processed! Total recieved was $" + total + ", amount saved through discounts was $" + discountSavings);
             
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();
@@ -221,6 +254,49 @@ public class SoftwareEngineering {
                 System.out.println("Malformed request!");
                 response = "Malformed request!".getBytes();
             }*/
+            
+            t.sendResponseHeaders(200, response.length);
+            OutputStream os = t.getResponseBody();
+            
+            os.write(response);
+            os.close();
+        }
+    }
+    
+    static class manageRewardsHandler implements HttpHandler {
+        public void handle(HttpExchange t) throws IOException {         
+            byte [] response = "Pong!".getBytes();
+
+            StringBuilder sb = new StringBuilder();
+            InputStream argumentStream = t.getRequestBody();
+            int i;
+            while((i = argumentStream.read()) != -1) {
+                sb.append((char) i);
+            }
+            System.out.println("ccc: " + sb.toString());
+            
+            try {
+                manageRewardData data = gson.fromJson(sb.toString(), manageRewardData.class);
+                database.setPointsPerDollar("admin",data.pointsPerDollar);
+                database.setDollarsPerPoint("admin",data.dollarsPerPoint);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+            //setPointsPerDollar("admin",100);
+            
+            t.sendResponseHeaders(200, response.length);
+            OutputStream os = t.getResponseBody();
+            
+            os.write(response);
+            os.close();
+            
+            System.out.println("HELP");
+        }
+    }
+    
+    static class getSettingsHandler implements HttpHandler {
+        public void handle(HttpExchange t) throws IOException {         
+            byte [] response = gson.toJson(new settingsData()).getBytes();
             
             t.sendResponseHeaders(200, response.length);
             OutputStream os = t.getResponseBody();

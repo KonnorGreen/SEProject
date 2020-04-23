@@ -173,7 +173,7 @@
 				discountNameLabel.innerHTML = itemData.discountName;
 				
 				discountPercentageLabel.innerHTML = '<button id="cancelButton">X</button>'+itemData.discountPercentage+'%';
-				discountPercentageLabel.childNodes[0].childNodes[0].onclick = function() { 
+				discountPercentageLabel.childNodes[0].onclick = function() { 
 					var result = window.confirm("Are you sure you want to remove "+itemData.discountName+" from the applied discounts?");
 					if (result) {
 						sendDataToParent("removeDiscount",{"discount": itemData})

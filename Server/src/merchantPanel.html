@@ -168,8 +168,15 @@
 					for( [k, v] of Object.entries(shoppingCart) ) {
 						removeFromShoppingCart(v.UID);
 					}
+					for( [k, v] of Object.entries(discountCart) ) {
+						removeFromDiscountCart(v);
+					}
 					pushShoppingCartData();
 					document.getElementById("shoppingCartContainer").style.display = "none";
+					shoppingCartUID = Math.floor(Math.random() * 100000000);
+					
+					customerAge = null;
+					document.getElementById("customerAgeLabel").innerHTML = "Customer's age is unknown";
 				} else if(e.data.dataType == "finalizeTransaction") {
 					// Report to server
 					editedShoppingCart = {};
@@ -179,18 +186,33 @@
 						}
 					}
 					
+					var data = {
+						"shoppingCart": shoppingCart,
+						"discountCart": discountCart,
+						"shoppingCartUID": shoppingCartUID,
+						"phoneNumber": e.data.data.phoneNumber,
+						"transactionType": e.data.data.transactionType,
+						"customerAge": customerAge
+					}
+					
 					const http = new XMLHttpRequest();
 					var url = "/finalizetransaction";
-					url = url + "?shoppingCartUID="+shoppingCartUID+"&phoneNumber="+e.data.data.phoneNumber+"&transactionType="+e.data.data.transactionType;
+					//url = url + "?shoppingCartUID="+shoppingCartUID+"&phoneNumber="+e.data.data.phoneNumber+"&transactionType="+e.data.data.transactionType;
 					http.open("POST",url);
-					http.send(JSON.stringify(shoppingCart));
+					http.send(JSON.stringify(data));
 					
 					for( [k, v] of Object.entries(shoppingCart) ) {
 						removeFromShoppingCart(v.UID);
 					}
+					for( [k, v] of Object.entries(discountCart) ) {
+						removeFromDiscountCart(v);
+					}
 					pushShoppingCartData();
 					document.getElementById("shoppingCartContainer").style.display = "none";
 					shoppingCartUID = Math.floor(Math.random() * 100000000);
+					
+					customerAge = null;
+					document.getElementById("customerAgeLabel").innerHTML = "Customer's age is unknown";
 				} else if(e.data.dataType == "applyDiscount") {
 					addToDiscountCart(e.data.data)
 				}
@@ -262,9 +284,6 @@
 			document.getElementById("resetCustomerAge").onclick = function() {
 				var previousAge = customerAge;
 				askAge();
-				
-				console.log(previousAge);
-				console.log(customerAge);
 				
 				// If we have a younger age for the customer, then go through the shopping cart and remove any items that are no longer legal to purchase
 				if(customerAge < previousAge) {

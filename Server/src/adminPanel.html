@@ -1,5 +1,6 @@
 <HTML>
 	<link rel="stylesheet" type="text/css" href="stylesheet.css" media="screen"/>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
 	<head>
 		<meta charset="UTF-8">
 	</head>
@@ -27,7 +28,7 @@
 				<input type="number" id="dollarsPerPointSpent" min="0.00" step="0.01">
 				<br>
 				
-				<input type="submit" value="Update Settings">
+				<input type="submit" value="Update Settings" onclick="manageRewards(); return false;">
 			</form>
 		</div>
 		
@@ -56,21 +57,60 @@
 				}
 			}
 			
+			function loadRewardSettings() {
+				const http = new XMLHttpRequest();
+				var url = "/getsettings";
+				http.open("GET",url);
+				http.send("");
+				
+				http.onreadystatechange = function() {
+					if(this.readyState == 4 && this.status == 200) {
+						var data = JSON.parse(http.responseText);
+						if(data.pointsPerDollar) {
+							document.getElementById("pointsPerDollarSpent").value = data.pointsPerDollar;
+						}
+						if(data.dollarsPerPoint) {
+							document.getElementById("dollarsPerPointSpent").value = data.dollarsPerPoint;
+						}
+					}
+				}
+			}
+			
+			function manageRewards() {
+				const http = new XMLHttpRequest();
+				var url = "/managerewards";
+				//url = url + "?pointsPerDollar="+document.getElementById("pointsPerDollarSpent").value+"&dollarsPerPoint="+document.getElementById("dollarsPerPointSpent").value;
+				
+				data = {
+					"pointsPerDollar": document.getElementById("pointsPerDollarSpent").value,
+					"dollarsPerPoint": document.getElementById("dollarsPerPointSpent").value
+				}
+				
+				http.open("POST",url);
+				http.send(JSON.stringify(data));
+				
+				console.log(JSON.stringify(data));
+				console.log(url);
+				
+				http.onreadystatechange = function() {
+					if(this.readyState == 4 && this.status == 200) {
+						console.log(http.responseText);
+					}
+				}
+			}
+			
 			document.getElementById("testButton").onclick = function() {
 				
 			}
-			
 			
 			function createPDF() {
 				var doc = new jsPDF()
 				var h1 = document.querySelector('#divID')
 				doc.fromHTML(h1,10,10)
 				doc.save("output.pdf")
-				}
-        
-  
+			}
 			
+			loadRewardSettings();
 		</script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.debug.js" integrity="sha384-NaWTHo/8YCBYJ59830LTz/P4aQZK1sS0SneOgAvhsIl3zBu8r9RevNg5lHCHAuQ/" crossorigin="anonymous"></script>
 	</body>
 </HTML>
